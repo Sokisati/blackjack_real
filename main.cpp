@@ -10,6 +10,8 @@
 
 using namespace std;
 
+auto rng = std::default_random_engine {};
+
 mt19937 mt(time(nullptr));
 
 class Deck
@@ -588,23 +590,60 @@ double expectedValueFunction(Deck knownDeck, int gladosHandValue, int dealerOpen
     double initialWinProb = winProbabilityFunction(knownDeck,gladosHandValue,probVector);
     double sum = 0;
     int imaginaryHandValue;
+    int imaginaryGameValue;
     double imaginaryWinProb;
     int theCard;
+    int card1,card2;
+
+
+    double sumTwo = 0;
 
     Deck imaginaryKnownDeck;
     imaginaryKnownDeck.equalizeDeck(knownDeck);
+    probVector = dealerTreeVectorFunction(imaginaryKnownDeck,dealerOpenCardValue,handNodeVector,17);
 
     for(int i=0; i<knownDeck.getNumberOfCards(); i++)
     {
         theCard = imaginaryKnownDeck.getElementI(i);
-        imaginaryKnownDeck.removeCard(theCard);
-        probVector = dealerTreeVectorFunction(imaginaryKnownDeck,dealerOpenCardValue,handNodeVector,17);
         imaginaryHandValue = gladosHandValue + theCard;
         imaginaryWinProb = winProbabilityFunction(imaginaryKnownDeck,imaginaryHandValue,probVector);
         instanceSum = imaginaryWinProb - initialWinProb;
         sum += instanceSum;
-        imaginaryKnownDeck.equalizeDeck(knownDeck);
     }
+
+    handNodeVector.clear();
+
+    //we should also account for 2 combinations
+    int combinations = combinationFunction(imaginaryKnownDeck.getNumberOfCards(),2);
+    vector<int> combinationVector;
+    vector<vector<int>> allCombinations = getCombinations(knownDeck,2);
+    for(int i=0; i<combinations; i++)
+    {
+        combinationVector = allCombinations[i];
+        card1 = combinationVector.front();
+        card2 = combinationVector.back();
+        imaginaryHandValue = gladosHandValue + card1 + card2;
+        if(card1==11 && card2==11)
+        {
+            imaginaryHandValue = imaginaryHandValue-20;
+        }
+        else if((card1==11 || card2==11)&&imaginaryHandValue>21)
+        {
+            imaginaryHandValue = imaginaryHandValue-10;
+        }
+        imaginaryWinProb = winProbabilityFunction(imaginaryKnownDeck,imaginaryHandValue,probVector);
+        instanceSum = imaginaryWinProb - initialWinProb;
+        sumTwo += instanceSum;
+    }
+
+    cout<<"two"<<sumTwo<<" one"<<sum<<endl;
+    if(sumTwo>0 && sum<0)
+    {
+        return 222;
+    }
+
+
+    handNodeVector.clear();
 
     double roundedValue = round(sum * 1e6) / 1e6;
     return roundedValue;
@@ -657,9 +696,20 @@ int main()
 
         while(expectedValue>0&&Glados.getTotalValueOfHand()<=21)
         {
-            cout<<"I want a card. Tell the dealer I want one"<<endl;
-            cin>>gladosCard1;
-            Glados.drawSpecificCard(gladosCard1,true,deckKnownToGlados,actualDeck);
+            if(expectedValue==222)
+            {
+                cout<<"I want 2 cards. Take 'em for me"<<endl;
+                cin>>gladosCard1;
+                cin>>gladosCard2;
+                Glados.drawSpecificCard(gladosCard1,true,deckKnownToGlados,actualDeck);
+                Glados.drawSpecificCard(gladosCard2,true,deckKnownToGlados,actualDeck);
+            }
+            else
+            {
+                cout<<"I want a card. Tell the dealer I want one"<<endl;
+                cin>>gladosCard1;
+                Glados.drawSpecificCard(gladosCard1,true,deckKnownToGlados,actualDeck);
+            }
             expectedValue = expectedValueFunction(deckKnownToGlados,Glados.getPlayerGameValue(),Dealer.getPlayerOpenCardValue(),handNodeVector);
         }
         cout<<"I don't want any/more cards. Now it's dealers turn"<<endl;
