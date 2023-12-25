@@ -613,7 +613,8 @@ double expectedValueFunction(Deck knownDeck, int gladosHandValue, int dealerOpen
 
     handNodeVector.clear();
 
-    //we should also account for 2 combinations
+    /*
+    //we should also account for 2 combinations. (I mean, I think...)
     int combinations = combinationFunction(imaginaryKnownDeck.getNumberOfCards(),2);
     vector<int> combinationVector;
     vector<vector<int>> allCombinations = getCombinations(knownDeck,2);
@@ -641,7 +642,7 @@ double expectedValueFunction(Deck knownDeck, int gladosHandValue, int dealerOpen
     {
         return 222;
     }
-
+    */
 
     handNodeVector.clear();
 
@@ -696,20 +697,10 @@ int main()
 
         while(expectedValue>0&&Glados.getTotalValueOfHand()<=21)
         {
-            if(expectedValue==222)
-            {
-                cout<<"I want 2 cards. Take 'em for me"<<endl;
-                cin>>gladosCard1;
-                cin>>gladosCard2;
-                Glados.drawSpecificCard(gladosCard1,true,deckKnownToGlados,actualDeck);
-                Glados.drawSpecificCard(gladosCard2,true,deckKnownToGlados,actualDeck);
-            }
-            else
-            {
-                cout<<"I want a card. Tell the dealer I want one"<<endl;
-                cin>>gladosCard1;
-                Glados.drawSpecificCard(gladosCard1,true,deckKnownToGlados,actualDeck);
-            }
+            cout<<"I want a card. Tell the dealer I want one"<<endl;
+            cin>>gladosCard1;
+            Glados.drawSpecificCard(gladosCard1,true,deckKnownToGlados,actualDeck);
+
             expectedValue = expectedValueFunction(deckKnownToGlados,Glados.getPlayerGameValue(),Dealer.getPlayerOpenCardValue(),handNodeVector);
         }
         cout<<"I don't want any/more cards. Now it's dealers turn"<<endl;
