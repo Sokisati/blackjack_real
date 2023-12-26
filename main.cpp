@@ -333,6 +333,18 @@ public:
 
 public:
 
+    int getNumberOfAces()
+    {
+        int numberOfAces = 0;
+        for(int i=0; i<cardVector.size(); i++)
+        {
+            if(cardVector[i]==11)
+            {
+                numberOfAces++;
+            }
+        }
+    }
+
     handNode(int nOSParam, double pPParam, vector<int> cardVectorParam)
     {
         numberOfSiblings = nOSParam;
@@ -340,9 +352,30 @@ public:
         selfProbability = static_cast<double>(1.0/numberOfSiblings)*parentProbability;
         cardVector = cardVectorParam;
 
+        int numberOfAces = getNumberOfAces();
+
         for(int i=0; i<cardVector.size(); i++)
         {
             value = value + cardVector[i];
+
+            if(value>21&&numberOfAces>0)
+            {
+                if(numberOfAces==1)
+                {
+                    value = value - 10;
+                }
+                else if(numberOfAces==2)
+                {
+                    if(value-10<=21)
+                    {
+                        value = value - 10;
+                    }
+                    else
+                    {
+                        value = value - 20;
+                    }
+                }
+            }
         }
 
         if(value>=17)
