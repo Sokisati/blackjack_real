@@ -345,17 +345,7 @@ public:
 
 public:
 
-    int getNumberOfAces()
-    {
-        int numberOfAces = 0;
-        for(int i=0; i<cardVector.size(); i++)
-        {
-            if(cardVector[i]==11)
-            {
-                numberOfAces++;
-            }
-        }
-    }
+
 
     handNode(int nOSParam, double pPParam, vector<int> cardVectorParam)
     {
@@ -363,34 +353,36 @@ public:
         parentProbability = pPParam;
         selfProbability = static_cast<double>(1.0/numberOfSiblings)*parentProbability;
         cardVector = cardVectorParam;
-
-        int numberOfAces = getNumberOfAces();
+        int numberOfAces=0;
 
         for(int i=0; i<cardVector.size(); i++)
         {
             value = value + cardVector[i];
-
-            if(value>21&&numberOfAces>0)
+            if(cardVector[i]==11)
             {
-                if(numberOfAces==1)
+                numberOfAces++;
+            }
+        }
+        if(value>21&&numberOfAces>0)
+        {
+            if(numberOfAces==1)
+            {
+                value = value - 10;
+            }
+            else if(numberOfAces==2)
+            {
+                if(value-10<=21)
                 {
                     value = value - 10;
                 }
-                else if(numberOfAces==2)
+                else
                 {
-                    if(value-10<=21)
-                    {
-                        value = value - 10;
-                    }
-                    else
-                    {
-                        value = value - 20;
-                    }
+                    value = value - 20;
                 }
             }
         }
 
-        if(value>=17)
+        if(value>=17 || (value<17 && numberOfSiblings==1))
         {
             finalHand = true;
         }
@@ -414,6 +406,9 @@ vector<int> eraseFunction(int number, vector<int> vector)
     return vector;
 }
 
+//VERY IMPORTANT NOTE: Number of siblings is +1 than what it is supposed to be. It makes perfect sense in math, so it's going to stay that way
+//Don't forget to clear the handNodeVector after every function. (I know, fricking recursive functions...)
+//If you are trying to fix this code, I warn you: Just don't mess around with tree functions, especially the recursive one
 vector<handNode> dealerTreeInitialFunction(Deck knownDeck, int playerOpenCardValue, vector<handNode> handNodeVector)
 {
     vector<int> tempVector;
@@ -442,7 +437,7 @@ void dealerTreeRecursiveFunction(vector<handNode> &handNodeVector, Deck knownDec
 
     for(int i=lastRunFirstNodeID; i<=lastRunLastNodeID; i++)
     {
-        if(handNodeVector[i].value<limit)
+        if(handNodeVector[i].value<limit && !knownDeckCopy.empty())
         {
             knownDeckCopy = originalVector;
 
@@ -490,8 +485,10 @@ vector<handNode> dealerTreeFunction(Deck knownDeck, int playerOpenCardValue, vec
         if(handNodeVector[i].finalHand)
         {
             finalNodeVector.push_back(handNodeVector[i]);
+            cout<<handNodeVector[i].value<<" ";
         }
     }
+    cout<<"\n";
 
     return finalNodeVector;
 }
@@ -641,21 +638,22 @@ double expectedValueFunction(Deck knownDeck, Player Glados, int dealerOpenCardVa
     double sumTwo = 0;
     Deck imaginaryKnownDeck;
     imaginaryKnownDeck.equalizeDeck(knownDeck);
-    probVector = dealerTreeVectorFunction(imaginaryKnownDeck,dealerOpenCardValue,handNodeVector,17);
 
     for(int i=0; i<knownDeck.getNumberOfCards(); i++)
     {
         theCard = imaginaryKnownDeck.getElementI(i);
         Glados.drawImaginaryCard(theCard);
         imaginaryHandValue = Glados.getPlayerGameValue();
+        imaginaryKnownDeck.removeCard(theCard);
+        probVector = dealerTreeVectorFunction(imaginaryKnownDeck,dealerOpenCardValue,handNodeVector,17);
         imaginaryWinProb = winProbabilityFunction(imaginaryKnownDeck,imaginaryHandValue,probVector);
         instanceSum = imaginaryWinProb - initialWinProb;
         sum += instanceSum;
         Glados.removeCardFromHand(theCard);
+        imaginaryKnownDeck.equalizeDeck(knownDeck);
     }
 
     handNodeVector.clear();
-
 
     //we should also account for 2 combinations. (I mean, I think...)
     int combinations = combinationFunction(imaginaryKnownDeck.getNumberOfCards(),2);
@@ -666,16 +664,18 @@ double expectedValueFunction(Deck knownDeck, Player Glados, int dealerOpenCardVa
         combinationVector = allCombinations[i];
         card1 = combinationVector.front();
         card2 = combinationVector.back();
-
         Glados.drawImaginaryCard(card1);
         Glados.drawImaginaryCard(card2);
+        imaginaryKnownDeck.removeCard(card1);
+        imaginaryKnownDeck.removeCard(card2);
         imaginaryHandValue = Glados.getPlayerGameValue();
+        probVector = dealerTreeVectorFunction(imaginaryKnownDeck,dealerOpenCardValue,handNodeVector,17);
         imaginaryWinProb = winProbabilityFunction(imaginaryKnownDeck,imaginaryHandValue,probVector);
         instanceSum = imaginaryWinProb - initialWinProb;
         sumTwo += instanceSum;
-
         Glados.removeCardFromHand(card1);
         Glados.removeCardFromHand(card2);
+        imaginaryKnownDeck.equalizeDeck(knownDeck);
     }
 
     cout<<"two: "<<sumTwo<<"  one: "<<sum<<endl;
@@ -684,10 +684,10 @@ double expectedValueFunction(Deck knownDeck, Player Glados, int dealerOpenCardVa
         return 222;
     }
 
-
     handNodeVector.clear();
 
     double roundedValue = round(sum * 1e6) / 1e6;
+    cout<<"value: "<<roundedValue<<"\n";
     return roundedValue;
 }
 
@@ -713,8 +713,8 @@ int main()
 
     Deck actualDeck;
     Deck deckKnownToGlados;
-    deckKnownToGlados.createLargeDeck(numberOfDecks);
-    actualDeck.createLargeDeck(numberOfDecks);
+    deckKnownToGlados.createDebugDeck();
+    actualDeck.createDebugDeck();
 
 
 
@@ -734,8 +734,8 @@ int main()
         cin>>dealerOpenCard;
         Dealer.drawSpecificCard(dealerOpenCard,true,deckKnownToGlados,actualDeck);
         deckKnownToGlados.removeCard(dealerOpenCard);
-        dealerTree = dealerTreeVectorFunction(deckKnownToGlados,dealerOpenCard,handNodeVector,17);
         expectedValue = expectedValueFunction(deckKnownToGlados,Glados,Dealer.getPlayerOpenCardValue(),handNodeVector);
+
 
         while(expectedValue>0&&Glados.getPlayerGameValue()>0)
         {
@@ -745,6 +745,7 @@ int main()
             expectedValue = expectedValueFunction(deckKnownToGlados,Glados,Dealer.getPlayerOpenCardValue(),handNodeVector);
             cout<<"glados "<<Glados.getPlayerGameValue()<<"\n";
         }
+
         cout<<"I don't want any/more cards. Now it's dealers turn"<<endl;
         cout<<"Type dealers secret cards"<<endl;
 
