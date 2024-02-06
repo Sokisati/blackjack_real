@@ -71,6 +71,10 @@ struct Player{
     void clearHand();
     void drawSpecificCard(unsigned int cardToDraw,GameDeck &actualDeck);
     void addRoundScore();
+    void drawImaginaryCard(unsigned int cardToDraw)
+    {
+        cardsInsideHand.addCard(cardToDraw);
+    }
 };
 
 struct ProbBar
@@ -93,6 +97,22 @@ struct Glados:public Player
     void updateExpectedValue(GameDeck originalDeck, unsigned int openCardValue);
     unsigned int getImaginaryHandValue(unsigned int imaginaryCardToDraw);
     void drawSpecificCard(unsigned int cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck);
+};
+
+struct DealerCopycat: public Player
+{
+    void drawGhostCard(unsigned int cardToAdd);
+};
+
+class Table
+{
+    Player dealer;
+    Glados glados;
+    DealerCopycat copycat;
+
+
+    void startNormalGame();
+
 };
 
 

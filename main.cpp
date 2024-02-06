@@ -13,6 +13,9 @@ int main()
     unsigned int dealerOpenCard;
     unsigned int gladosExtraCard;
     unsigned int dealerSecretCard;
+    unsigned int copycatExtraCard;
+
+    unsigned int copycatScore;
 
     GameDeck actualDeck(1);
     GameDeck knownDeck(1);
@@ -22,8 +25,9 @@ int main()
 
     Glados glados;
     Player dealer;
+    DealerCopycat copycat;
 
-
+    /*
     while(true)
     {
         //deal the cards
@@ -40,8 +44,8 @@ int main()
         glados.drawSpecificCard(firstInitialCard,actualDeck,knownDeck);
         glados.drawSpecificCard(secondInitialCard,actualDeck,knownDeck);
 
-        actualDeck.printCards();
-        knownDeck.printCards();
+        //give the same cards glados has
+        copycat.cardsInsideHand.equalizeDeck(glados.cardsInsideHand);
 
         std::cout<<"And what's the dealers open card?"<<"\n";
         std::cin>>dealerOpenCard;
@@ -50,8 +54,19 @@ int main()
 
         knownDeck.removeCard(dealer.getPlayerOpenCardValue());
 
-        actualDeck.printCards();
-        knownDeck.printCards();
+        while(true)
+        {
+            std::cout<<"Draw card for copycat"<<"\n";
+            std::cin>>copycatExtraCard;
+            copycat.drawGhostCard(copycatExtraCard);
+            copycat.printSubjectCards();
+            if(copycat.getPlayerGameValue()>=17 || copycat.getPlayerGameValue()==0)
+            {
+                break;
+            }
+        }
+
+        std::cout<<"Now, in the same order; put those cards back to the deck"<<"\n";
 
         glados.updateExpectedValue(knownDeck,dealer.getPlayerOpenCardValue());
 
@@ -91,15 +106,35 @@ int main()
             std::cout<<"It's a draw. I hate draws."<<"\n";
         }
 
+        if(copycat.getPlayerGameValue()>dealer.getPlayerGameValue())
+        {
+            copycat.addRoundScore();
+        }
+
+        knownDeck.printCards();
+        actualDeck.printCards();
+
         glados.clearHand();
         dealer.clearHand();
+        copycat.clearHand();
 
         knownDeck.equalizeDeck(actualDeck);
 
     }
+*/
+
+    actualDeck.createDebugDeck();
+    knownDeck.createDebugDeck();
+
+    glados.drawImaginaryCard(10);
+    glados.drawImaginaryCard(5);
+
+    dealer.drawImaginaryCard(8);
+    dealer.drawImaginaryCard(9);
+
+    glados.updateExpectedValue(knownDeck,dealer.getPlayerOpenCardValue());
 
     std::cout<<"Glados: "<<glados.roundScore<<"  "<<"Dealer: "<<dealer.roundScore<<"\n";
-
 
     return 0;
 }

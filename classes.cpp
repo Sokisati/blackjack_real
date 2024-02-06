@@ -12,11 +12,8 @@ void GameDeck::createDebugDeck()
     cards.clear();
     cards.push_back(6);
     cards.push_back(8);
-    cards.push_back(3);
+    cards.push_back(8);
     cards.push_back(7);
-    cards.push_back(10);
-    cards.push_back(11);
-
 }
 
 void PlayerDeck::calculateTotalValue()
@@ -148,7 +145,6 @@ void Deck::printCards()
 void GameDeck::createLargeDeck(int deckMultiplier)
 {
     clearDeck();
-
          //ordinary numbers
         for(int o=2; o<=10; o++)
         {
@@ -406,14 +402,16 @@ ProbBar Glados::treeFunction(GameDeck originalDeck, unsigned int openCardValue)
         lastRunFirstId = lastRunLastId;
         lastRunLastId = nodeVector.size();
     }
-    for(int d=0; d<nodeVector.size(); d++)
+    for(auto & d : nodeVector)
     {
-        if(nodeVector[d].gameValue==0 || nodeVector[d].gameValue>=17)
+        if(d.gameValue==0 || d.gameValue>=17)
         {
-            probBar.addProb(nodeVector[d].selfProbability,nodeVector[d].cardsInside.getGameValue());
+            probBar.addProb(d.selfProbability,d.cardsInside.getGameValue());
         }
-
     }
+
+    std::cout<<nodeVector.size()<<"\n";
+
     return probBar;
 }
 
@@ -444,7 +442,21 @@ unsigned int Glados::getImaginaryHandValue(unsigned int imaginaryCardToDraw)
 
 void Glados::updateExpectedValue(GameDeck originalDeck, unsigned int openCardValue)
 {
-    //TODO: DUPLICATE MAP
+
+    //it's pretty damn hard to mathematically prove that if glados is busted, it doesn't matter if he chooses to draw a card or not
+    //one could say "well, he might want to draw a card to increase the chance of dealer getting busted" but... no.
+    //there are 3 scenarios: 1-there is no branch in the tree that ends up in dealer busting  2-there is no branch in tree that DOESN'T end up in dealer busting
+    //and 3-there are branches that ends up in busting AND not. In the scenario 1, it's pretty obvious that no matter what Glados does, his probability of winning
+    //doesn't change because in order for that to happen, dealer must also bust and that contradicts with the scenario itself.
+    //In the scenario 2, drawing a card will end up not changing winning probability OR worsen it. Right now, our probability of winning is 1 (draw is also considered
+    //a victory for a couple of reasons) and if we draw a card (let's say, like an 8) that might alter the tree in a way that now, there are some branches that doesn't
+    //end up in dealer busting. And remember, Glados is busted so any kind of value is going to beat him.
+    //And there is the damned scenario 3. Look, all you need to know is that the positive expected value of drawing low value cards (which alters the tree in a way
+    //so that the probability of dealer busting increases than the initial condition) times the probability of drawing those cards card IS EQUAL to the negative
+    //expected value of drawing high value cards (which alters the tree in way so that the probability of dealer busting increases than the initial condition)
+
+    //of course, this is just a conjecture. need someone to prove or disprove it. until then, it's best to leave it
+
     unsigned int imaginaryCard;
     double expectedValue = 0;
     ProbBar probBar;
@@ -479,18 +491,137 @@ void Glados::updateExpectedValue(GameDeck originalDeck, unsigned int openCardVal
         duplicateVector.push_back(imaginaryCard);
         duplicateMap[imaginaryCard]=(imaginaryWinProb-initialWinProb);
     }
+    std::cout<<"e: "<<expectedValue<<"\n";
     this->expectedValueOfDrawingCard = expectedValue;
 }
 
 void ProbBar::clearBar()
 {
-    for(int i=0; i<6; i++)
+    for(double & i : probArray)
     {
-        probArray[i] = 0;
+        i = 0;
     }
 }
 
 void Player::addRoundScore()
 {
     roundScore++;
+}
+
+void DealerCopycat::drawGhostCard(unsigned int cardToAdd)
+{
+    cardsInsideHand.addCard(cardToAdd);
+}
+
+void Table::startNormalGame()
+{
+    unsigned int firstInitialCard;
+    unsigned int secondInitialCard;
+    unsigned int dealerOpenCard;
+    unsigned int gladosExtraCard;
+    unsigned int dealerSecretCard;
+    unsigned int copycatExtraCard;
+
+    unsigned int copycatScore;
+
+    GameDeck actualDeck(1);
+    GameDeck knownDeck(1);
+
+    actualDeck.createLargeDeck(1);
+    knownDeck.createLargeDeck(1);
+
+
+    while(true)
+    {
+        //deal the cards
+        std::cout<<"What are my cards?"<<"\n";
+        std::cin>>firstInitialCard;
+        std::cin>>secondInitialCard;
+
+        //exit condition
+        if(firstInitialCard==999||secondInitialCard==999)
+        {
+            break;
+        }
+
+        glados.drawSpecificCard(firstInitialCard,actualDeck,knownDeck);
+        glados.drawSpecificCard(secondInitialCard,actualDeck,knownDeck);
+
+        //give the same cards glados has
+        copycat.cardsInsideHand.equalizeDeck(glados.cardsInsideHand);
+
+        std::cout<<"And what's the dealers open card?"<<"\n";
+        std::cin>>dealerOpenCard;
+
+        dealer.drawSpecificCard(dealerOpenCard,actualDeck);
+
+        knownDeck.removeCard(dealer.getPlayerOpenCardValue());
+
+        while(true)
+        {
+            if(copycat.getPlayerGameValue()>=17 || copycat.getPlayerGameValue()==0)
+            {
+                break;
+            }
+            std::cout<<"Draw card for copycat"<<"\n";
+            std::cin>>copycatExtraCard;
+            copycat.drawGhostCard(copycatExtraCard);
+        }
+
+        std::cout<<"Now, in the same order; put those cards back to the deck"<<"\n";
+
+        glados.updateExpectedValue(knownDeck,dealer.getPlayerOpenCardValue());
+
+        while(glados.expectedValueOfDrawingCard>=0)
+        {
+            std::cout<<"I want a card. Take one for me"<<"\n";
+            std::cin>>gladosExtraCard;
+            glados.drawSpecificCard(gladosExtraCard,actualDeck,knownDeck);
+            glados.updateExpectedValue(knownDeck,dealer.getPlayerOpenCardValue());
+        }
+
+        std::cout<<"I don't want any/more cards"<<"\n";
+
+        while(true)
+        {
+            std::cout<<"Reveal card of dealer"<<"\n";
+            std::cin>>dealerSecretCard;
+            dealer.drawSpecificCard(dealerSecretCard,actualDeck);
+            if(dealer.getPlayerGameValue()>=17 || dealer.getPlayerGameValue()==0)
+            {
+                break;
+            }
+        }
+
+        if(glados.getPlayerGameValue()>dealer.getPlayerGameValue())
+        {
+            std::cout<<"I won, as expected."<<"\n";
+            glados.addRoundScore();
+        }
+        else if(glados.getPlayerGameValue()<dealer.getPlayerGameValue())
+        {
+            std::cout<<"You must have cheated or smth."<<"\n";
+            dealer.addRoundScore();
+        }
+        else
+        {
+            std::cout<<"It's a draw. I hate draws."<<"\n";
+        }
+
+        if(copycat.getPlayerGameValue()>dealer.getPlayerGameValue())
+        {
+            copycat.addRoundScore();
+        }
+
+        knownDeck.printCards();
+        actualDeck.printCards();
+
+        glados.clearHand();
+        dealer.clearHand();
+        copycat.clearHand();
+
+        knownDeck.equalizeDeck(actualDeck);
+
+    }
+
 }
