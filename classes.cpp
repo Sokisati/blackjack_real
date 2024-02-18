@@ -10,29 +10,28 @@
 void GameDeck::createDebugDeck()
 {
     cards.clear();
-    cards.push_back(6);
     cards.push_back(8);
     cards.push_back(3);
     cards.push_back(7);
     cards.push_back(10);
     cards.push_back(11);
+    cards.addCard(6);//Use the addCard method somehow, don't meddle with arr/vector attributes directly
 
 }
 
-void PlayerDeck::calculateTotalValue()
+unsigned int PlayerDeck::calculateTotalValue()
 {
     unsigned int sum = 0;
     for(auto i: cards)
     {
         sum += i;
     }
-    this->totalValue = sum;
+    return sum;
 }
 
 unsigned int Deck::getNumberOfCards()
 {
-    this->numberOfCards = cards.size();
-    return numberOfCards;
+    return cards.size();
 }
 
 unsigned int Deck::getElement(unsigned int index)
@@ -43,8 +42,9 @@ unsigned int Deck::getElement(unsigned int index)
 unsigned int PlayerDeck::getNumberOfAces()
 {
     unsigned int numberOfAces = 0;
-    for(auto i: cards)
+    for(auto card: cards)
     {
+        //card.isAces() OR card.slug='ace'
         if(i==11)
         {
             numberOfAces++;
@@ -56,7 +56,7 @@ unsigned int PlayerDeck::getNumberOfAces()
 unsigned int PlayerDeck::getGameValue()
 {
     unsigned int numberOfAces = getNumberOfAces();
-    calculateTotalValue();
+    unsigned int totalValue = calculateTotalValue();
 
     if(totalValue>21)
     {
@@ -83,8 +83,7 @@ unsigned int PlayerDeck::getGameValue()
 void Deck::removeCard(unsigned int cardToRemove)
 {
     bool error = true;
-    try
-    {
+
         for(int i=0; i<cards.size(); i++)
         {
             if(cards[i]==cardToRemove)
@@ -96,14 +95,10 @@ void Deck::removeCard(unsigned int cardToRemove)
         }
         if(error)
         {
+            //either throw proper exception class and catch accordingly SOMEWHERE ELSE, or just apply the logic here without any throws
             throw "Card to remove couldn't be found!";
         }
-    }
-    catch(const char* err)
-    {
-        std::cout<<err<<"\n";
-        system("pause>0");
-    }
+
 
 }
 
@@ -122,12 +117,13 @@ unsigned int PlayerDeck::getOpenCardValue()
         system("pause>0");
     }
 
-    openCardValue = this->cards[0];
+    openCardValue = this->cards[0];//Another case for having a Card class. It would have an attribute of 'open' (bool). Also you need another method for getting open cards by this attribute filtering
     return openCardValue;
 }
 
 void Deck::addCard(unsigned int cardToAdd)
 {
+    //define card class, so you can easily assert & validate these card values. Otherwise you'll have to validate it in each method/func
     this->cards.push_back(cardToAdd);
 }
 
@@ -145,7 +141,7 @@ void Deck::printCards()
     std::cout<<"\n";
 }
 
-void GameDeck::createLargeDeck(int deckMultiplier)
+void GameDeck::createLargeDeck(int deckMultiplier)//define as static method which returns Deck/GameDeck instance
 {
     clearDeck();
 
@@ -154,7 +150,7 @@ void GameDeck::createLargeDeck(int deckMultiplier)
         {
             for(int m=0; m<deckMultiplier; m++)
             {
-                for(int i=1; i<=4; i++)
+                for(int i=1; i<=4; i++)//define a constant for this, it is the definition count for each card in a deck
                 {
                     cards.push_back(o);
                 }
@@ -163,11 +159,11 @@ void GameDeck::createLargeDeck(int deckMultiplier)
         }
 
         //k, q and j's
-        for(int i=1; i<=12; i++)
+        for(int i=1; i<=12; i++)//no.
         {
             for(int m=0; m<deckMultiplier; m++)
             {
-                cards.push_back(10);
+                cards.push_back(10);//Again, define card class so you can keep the labels, slugs and card values of these. Because as it is now, you don't know what the actual card is.
             }
         }
 

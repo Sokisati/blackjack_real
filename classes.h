@@ -29,7 +29,7 @@ struct PlayerDeck:public Deck
     unsigned int openCardValue;
     unsigned int getNumberOfAces();
     unsigned int getOpenCardValue();
-    void calculateTotalValue();
+    unsigned int calculateTotalValue();
     unsigned int getGameValue();
 };
 
@@ -58,8 +58,6 @@ struct Player{
 
     unsigned int gameValue;
     unsigned int openCardValue;
-    unsigned int numberOfCards;
-    unsigned int totalValue;
     unsigned int roundScore = 0;
     unsigned int simulationScore = 0;
     PlayerDeck cardsInsideHand;
