@@ -5,6 +5,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
+#include "iostream"
+#include <map>
+#include <random>
+#include "fstream"
 
 struct Deck
 {
@@ -24,12 +28,10 @@ public:
 
 struct PlayerDeck:public Deck
 {
-    unsigned int totalValue;
-    unsigned int gameValue;
-    unsigned int openCardValue;
+
     unsigned int getNumberOfAces();
     unsigned int getOpenCardValue();
-    void calculateTotalValue();
+    unsigned int getTotalValue();
     unsigned int getGameValue();
 };
 
@@ -51,19 +53,18 @@ struct GameDeck:public Deck
     void resetDeck(int deckMultiplier);
     void removeCardsForTreeOperation(TreeNode node);
     void shuffle();
+    int getRandomCard();
     GameDeck(unsigned int deckMultiplier);
 };
 
 struct Player{
 
-    unsigned int gameValue;
-    unsigned int openCardValue;
-    unsigned int numberOfCards;
-    unsigned int totalValue;
+
     unsigned int roundScore = 0;
     unsigned int simulationScore = 0;
     PlayerDeck cardsInsideHand;
     void printSubjectCards();
+    void writeSubjectCardsTxt(std::fstream &fileToWrite);
     unsigned getPlayerOpenCardValue();
     unsigned getPlayerGameValue();
     std::vector<int> getCards();
@@ -71,10 +72,8 @@ struct Player{
     void clearHand();
     void drawSpecificCard(unsigned int cardToDraw,GameDeck &actualDeck);
     void addRoundScore();
-    void drawImaginaryCard(unsigned int cardToDraw)
-    {
-        cardsInsideHand.addCard(cardToDraw);
-    }
+    void drawImaginaryCard(unsigned int cardToDraw);
+    void drawRandomCard(GameDeck &actualDeck);
 };
 
 struct ProbBar
@@ -97,11 +96,16 @@ struct Glados:public Player
     void updateExpectedValue(GameDeck originalDeck, unsigned int openCardValue);
     unsigned int getImaginaryHandValue(unsigned int imaginaryCardToDraw);
     void drawSpecificCard(unsigned int cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck);
+    void drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck);
+    unsigned int getLastCard();
 };
 
 struct DealerCopycat: public Player
 {
     void drawGhostCard(unsigned int cardToAdd);
+    void returnTheCards(GameDeck &actualDeck);
+    bool canMirrorCard(Glados glados);
+    void mirrorCard(Glados glados);
 };
 
 class Table
@@ -109,9 +113,14 @@ class Table
     Player dealer;
     Glados glados;
     DealerCopycat copycat;
+    std::fstream simResults;
 
 
+
+public:
+    Table();
     void startNormalGame();
+    void startSimulation(unsigned int roundToWin, unsigned int simulationToWin);
 
 };
 
