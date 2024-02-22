@@ -46,7 +46,7 @@ class DealerCopycat : public Dealer
 public:
     bool canMirrorCard(Glados glados);
     void mirrorCard(Glados glados);
-    void drawCardLikeDealer(Glados glados, GameDeck ghostDeck);
+    void drawCardLikeDealer(const Glados& glados, GameDeck ghostDeck);
 };
 
 #endif //BLACKJACK_REAL_PLAYER_H

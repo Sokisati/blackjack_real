@@ -8,6 +8,7 @@
 #define BLACKJACK_REAL_TABLE_H
 
 #include "player.h"
+#include "fstream"
 
 class Table
 {
@@ -16,11 +17,14 @@ public:
     Glados glados;
     DealerCopycat copycat;
     int copycatIndex = 0;
+    std::fstream resultTxt;
 
+    Table();
     void startNormalGame();
     void startSimulation(unsigned int roundToWin, unsigned int simulationToWin);
     void dealCards(Glados &glados, Dealer &dealer, GameDeck &actualDeck, GameDeck &knownDeck);
     void endRound();
+    void writeResultsToTxt(GameDeck gameDeck);
 
 };
 

@@ -304,7 +304,7 @@ void DealerCopycat::mirrorCard(Glados glados)
     drawImaginaryCard(glados.cardsInsideHand.getElement(cardsInsideHand.getNumberOfCards()));
 }
 
-void DealerCopycat::drawCardLikeDealer(Glados glados, GameDeck ghostDeck)
+void DealerCopycat::drawCardLikeDealer(const Glados& glados, GameDeck ghostDeck)
 {
     while(true)
     {

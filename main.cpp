@@ -5,6 +5,6 @@
 int main()
 {
    Table table;
-   table.startSimulation(6,10);
+   table.startSimulation(6,1);
 
 }

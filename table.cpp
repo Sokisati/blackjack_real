@@ -6,6 +6,11 @@
 #include "player.h"
 #include "iostream"
 
+Table::Table()
+{
+   resultTxt.open("test_results.txt",std::ios::out);
+}
+
 void Table::startNormalGame()
 {
     unsigned int firstInitialCard;
@@ -129,6 +134,46 @@ void Table::endRound()
 
     std::cout<<"\n";
 }
+void Table::writeResultsToTxt(GameDeck knownDeck)
+{
+
+    resultTxt<<"Glados hand: ";
+    for(unsigned int card: glados.cardsInsideHand.cards)
+    {
+        resultTxt<<card<<" ";
+    }
+    resultTxt<<"\n";
+
+    resultTxt<<"Dealer hand: ";
+    for(unsigned int card: dealer.cardsInsideHand.cards)
+    {
+        resultTxt<<card<<" ";
+    }
+    resultTxt<<"\n";
+
+    resultTxt<<"Copycat hand: ";
+    for(unsigned int card: copycat.cardsInsideHand.cards)
+    {
+        resultTxt<<card<<" ";
+    }
+    resultTxt<<"\n";
+
+    resultTxt<<"copycat index: "<<copycatIndex<<"\n";
+
+    if(copycat.getCards()!=glados.getCards())
+    {
+        for(unsigned int card: knownDeck.cards)
+        {
+            resultTxt<<card<<" ";
+        }
+        resultTxt<<"\n";
+    }
+
+    resultTxt<<"\n";
+    resultTxt<<"\n";
+
+}
+
 
 void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWin)
 {
@@ -137,6 +182,8 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
     GameDeck knownDeck(1);
 
     GameDeck ghostDeck(1);
+
+    GameDeck knownDeckOrigial(1);
 
     actualDeck.createLargeDeck();
     knownDeck.createLargeDeck();
@@ -151,6 +198,9 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
         }
 
         dealCards(glados,dealer,actualDeck,knownDeck);
+
+        knownDeckOrigial.equalizeDeck(knownDeck);
+
         copycat.cardsInsideHand.equalizeDeck(glados.cardsInsideHand);
 
         ghostDeck.equalizeDeck(actualDeck);
@@ -161,12 +211,15 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
 
         dealer.drawCardSoft17(actualDeck,knownDeck);
 
+
         std::cout<<"Glados hand: ";
         glados.printSubjectCards();
         std::cout<<"Dealer hand: ";
         dealer.printSubjectCards();
         std::cout<<"Copycat hand:";
         copycat.printSubjectCards();
+
+        writeResultsToTxt(knownDeckOrigial);
 
         endRound();
 
@@ -192,7 +245,11 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
             glados.roundScore=0;
             dealer.roundScore=0;
         }
+
+        actualDeck.printCards();
     }
     std::cout<<"glados: "<<glados.simulationScore<<" "<<" dealer:"<<dealer.simulationScore<<"\n";
     std::cout<<"cc: "<<copycatIndex<<"\n";
+
+    resultTxt.close();
 }
