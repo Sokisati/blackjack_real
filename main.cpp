@@ -1,11 +1,10 @@
-#include "classes.h"
+#include "table.h"
+#include <iostream>
+
 
 int main()
 {
-
    Table table;
-   table.startSimulation(6,20);
-
-
+   table.startSimulation(6,1);
 
 }
