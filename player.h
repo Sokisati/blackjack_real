@@ -31,7 +31,6 @@ public:
     unsigned int getImaginaryHandValue(unsigned int imaginaryCardToDraw);
     void drawSpecificCard(unsigned int cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck);
     void drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck);
-    unsigned int getLastCard();
     void drawCardBasedOnExpectedValue(GameDeck &actualDeck, GameDeck &knownDeck, const unsigned int &dealerOpenCardValue);
 };
 

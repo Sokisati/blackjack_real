@@ -109,10 +109,12 @@ ProbBar Glados::treeFunction(GameDeck originalDeck, unsigned int openCardValue)
                 //now create the branches for this node
                 unsigned int tempImaginaryDeckSize = tempImaginaryDeck.getNumberOfCards();
 
+
                 if(tempImaginaryDeckSize==0)
                 {
-                    continue;
+                    throw TreeGenerationError();
                 }
+
 
                 for(int k=0; k<tempImaginaryDeckSize; k++)
                 {
@@ -135,12 +137,13 @@ ProbBar Glados::treeFunction(GameDeck originalDeck, unsigned int openCardValue)
 
     for(auto & d : nodeVector)
     {
-        if(d.gameValue==0 || d.gameValue>=17)
+
+        unsigned int gameValue = d.cardsInside.getGameValue();
+        if(gameValue==0 || gameValue>=17)
         {
-            probBar.addProb(d.selfProbability,d.cardsInside.getGameValue());
+            probBar.addProb(d.selfProbability,gameValue);
         }
     }
-
 
     return probBar;
 }
@@ -183,7 +186,11 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
     double initialWinProb;
     double imaginaryWinProb;
     probBar = treeFunction(originalDeck,openCardValue);
+
     initialWinProb = probBar.getWinProb(getPlayerGameValue());
+
+    std::cout<<"iwp "<<initialWinProb<<"\n";
+
     unsigned int imaginaryHandValue;
     probBar.clearBar();
     std::vector<unsigned int> duplicateVector;
@@ -192,10 +199,11 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
     double worstCaseScenario;
     double bestCaseScenario;
 
+
     for(int i=0; i<originalDeck.getNumberOfCards(); i++)
     {
-        imaginaryCard = originalDeck.getElement(i);
 
+        imaginaryCard = originalDeck.getElement(i);
         if(i!=0)
         {
             worstCaseScenario = (originalDeck.getNumberOfCards()-i)*(-initialWinProb);
@@ -219,7 +227,6 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
                 continue;
             }
         }
-
         imaginaryDeck.removeCard(imaginaryCard);
         imaginaryHandValue = getImaginaryHandValue(imaginaryCard);
         probBar = treeFunction(imaginaryDeck,openCardValue);
@@ -229,7 +236,9 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
         probBar.clearBar();
         duplicateVector.push_back(imaginaryCard);
         duplicateMap[imaginaryCard]=(imaginaryWinProb-initialWinProb);
+
     }
+
     std::cout<<"e: "<<expectedValue<<"\n";
     return expectedValue;
 }
@@ -245,11 +254,6 @@ void Glados::drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck) {
     actualDeck.removeCard(randomCard);
     knownDeck.removeCard(randomCard);
     cardsInsideHand.addCard(randomCard);
-}
-
-unsigned int Glados::getLastCard()
-{
-    return cardsInsideHand.cards.back();
 }
 
 void Glados::drawCardBasedOnExpectedValue(GameDeck &actualDeck, GameDeck &knownDeck, const unsigned int &dealerOpenCardValue)

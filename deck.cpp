@@ -53,6 +53,11 @@ void Deck::printCards()
     std::cout<<"\n";
 }
 
+void Deck::equalizeDeck(const Deck& deckToCopy)
+{
+    this->cards = deckToCopy.cards;
+}
+
 
 unsigned int PlayerDeck::getTotalValue()
 {
@@ -124,13 +129,15 @@ GameDeck::GameDeck(unsigned int deckMultiplier)
 void GameDeck::createDebugDeck()
 {
     cards.clear();
-    cards.push_back(10);
-    cards.push_back(10);
-    cards.push_back(10);
-    cards.push_back(6);
+    cards.push_back(4);
+    cards.push_back(4);
+    cards.push_back(5);
+    cards.push_back(5);
+    cards.push_back(7);
+    cards.push_back(7);
+    cards.push_back(7);
     cards.push_back(8);
-    cards.push_back(2);
-    cards.push_back(2);
+    cards.push_back(11);
 }
 
 void GameDeck::createLargeDeck()
@@ -164,11 +171,6 @@ void GameDeck::createLargeDeck()
             cards.push_back(11);
         }
     }
-}
-
-void Deck::equalizeDeck(const Deck& deckToCopy)
-{
-    this->cards = deckToCopy.cards;
 }
 
 void GameDeck::resetDeck()

@@ -7,10 +7,17 @@
 
 #include "deck.h"
 
+#include <exception>
+
+struct TreeGenerationError : public std::exception
+{
+    const char* what();
+};
+
+
 struct TreeNode
 {
     PlayerDeck cardsInside;
-    unsigned int gameValue;
     double parentProbability;
     double selfProbability;
     TreeNode(PlayerDeck cards, unsigned int width,double parentProbability);

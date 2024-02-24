@@ -4,6 +4,10 @@
 #include "tree_and_bar.h"
 #include "iostream"
 
+const char *TreeGenerationError::what()
+{
+    return "A real tree can't be created with these open card value and deck";
+}
 
 ProbBar::ProbBar()
 {
