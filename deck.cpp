@@ -129,15 +129,10 @@ GameDeck::GameDeck(unsigned int deckMultiplier)
 void GameDeck::createDebugDeck()
 {
     cards.clear();
-    cards.push_back(4);
-    cards.push_back(4);
-    cards.push_back(5);
-    cards.push_back(5);
-    cards.push_back(7);
-    cards.push_back(7);
-    cards.push_back(7);
-    cards.push_back(8);
-    cards.push_back(11);
+    addCard(2);
+    addCard(5);
+    addCard(6);
+    addCard(11);
 }
 
 void GameDeck::createLargeDeck()

@@ -99,35 +99,21 @@ void Table::dealCards(Glados &glados, Dealer &dealer, GameDeck &actualDeck, Game
     knownDeck.removeCard(dealer.getPlayerOpenCardValue());
 }
 
-void Table::endRound()
+void Table::endRound(GameDeck &actualDeck, GameDeck &knownDeck)
 {
     if(glados.getPlayerGameValue()>dealer.getPlayerGameValue())
     {
-        if(copycat.getPlayerGameValue()<dealer.getPlayerGameValue() || copycat.getPlayerGameValue()==dealer.getPlayerGameValue())
-        {
-            copycatIndex++;
-        }
         glados.addRoundScore();
     }
     else if(glados.getPlayerGameValue()<dealer.getPlayerGameValue())
     {
-        if(copycat.getPlayerGameValue()>dealer.getPlayerGameValue()||copycat.getPlayerGameValue()==dealer.getPlayerGameValue())
-        {
-            copycatIndex--;
-        }
         dealer.addRoundScore();
     }
-    else
-    {
-        if(copycat.getPlayerGameValue()<dealer.getPlayerGameValue())
-        {
-            copycatIndex++;
-        }
-        else if(copycat.getPlayerGameValue()>dealer.getPlayerGameValue())
-        {
-            copycatIndex--;
-        }
-    }
+
+    glados.clearHand();
+    dealer.clearHand();
+    copycat.clearHand();
+    knownDeck.equalizeDeck(actualDeck);
 
     std::cout<<"\n";
 }
@@ -156,8 +142,6 @@ void Table::writeResultsToTxt(GameDeck knownDeck)
     }
     resultTxt<<"\n";
 
-    resultTxt<<"copycat index: "<<copycatIndex<<"\n";
-
     if(copycat.getCards()!=glados.getCards())
     {
         for(unsigned int card: knownDeck.cards)
@@ -180,7 +164,6 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
 
     GameDeck ghostDeck(1);
 
-    GameDeck knownDeckOriginal(1);
 
     actualDeck.createLargeDeck();
     knownDeck.createLargeDeck();
@@ -197,8 +180,6 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
         }
 
         dealCards(glados,dealer,actualDeck,knownDeck);
-
-        knownDeckOriginal.equalizeDeck(knownDeck);
 
         copycat.cardsInsideHand.equalizeDeck(glados.cardsInsideHand);
 
@@ -220,7 +201,6 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
             knownDeck.createLargeDeck();
 
             dealCards(glados,dealer,actualDeck,knownDeck);
-            knownDeckOriginal.equalizeDeck(knownDeck);
 
             copycat.cardsInsideHand.equalizeDeck(glados.cardsInsideHand);
 
@@ -229,6 +209,9 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
 
 
         copycat.drawCardLikeDealer(glados,ghostDeck);
+
+        //until I study this further, it's best to leave it in comment
+        //glados.updateValueGained(knownDeck,copycat.cardsInsideHand,dealer.getPlayerOpenCardValue());
 
         dealer.drawCardSoft17(actualDeck,knownDeck);
 
@@ -239,19 +222,11 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
         std::cout<<"Copycat hand:";
         copycat.printSubjectCards();
 
-        writeResultsToTxt(knownDeckOriginal);
-
-        endRound();
-
-        glados.clearHand();
-        dealer.clearHand();
-        copycat.clearHand();
-        knownDeck.equalizeDeck(actualDeck);
-        ghostDeck.equalizeDeck(actualDeck);
+        endRound(actualDeck,knownDeck);
 
         std::cout<<"gr: "<<glados.roundScore<<" dr:"<<dealer.roundScore<<"\n";
         std::cout<<"gs: "<<glados.simulationScore<<" ds: "<<dealer.simulationScore<<"\n";
-        std::cout<<"cc: "<<copycatIndex<<"\n";
+
 
         if(glados.roundScore==roundToWin)
         {
@@ -269,7 +244,6 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
         std::cout<<"\n\n";
     }
     std::cout<<"glados: "<<glados.simulationScore<<" "<<" dealer:"<<dealer.simulationScore<<"\n";
-    std::cout<<"cc: "<<copycatIndex<<"\n";
 
     resultTxt.close();
 }

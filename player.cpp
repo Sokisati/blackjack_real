@@ -156,27 +156,31 @@ unsigned int Glados::getImaginaryHandValue(unsigned int imaginaryCardToDraw)
     return imaginaryHandValue;
 }
 
+double Glados::expectedValueCaseDetector(double expectedValue,double initialWinProb,const unsigned int &iteration,const unsigned int &deckSize)
+{
+    double worstCaseScenario;
+    double bestCaseScenario;
+
+    worstCaseScenario = (deckSize-iteration)*(-initialWinProb);
+    bestCaseScenario = (deckSize-iteration)*(initialWinProb);
+    if(expectedValue+bestCaseScenario<0)
+    {
+        std::cout<<"worst case scenario detected in iteration: "<<" "<<iteration<<"\n";
+        return -1.123;
+    }
+    else if(expectedValue+worstCaseScenario>0)
+    {
+        std::cout<<"best case scenario detected in iteration: "<<" "<<iteration<<"\n";
+        return 1.123;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValue)
 {
-
-    //it's pretty damn hard to mathematically prove that if glados is busted, it doesn't matter if he chooses to draw a card or not
-    //one could say "well, he might want to draw a card to increase the chance of dealer getting busted" but... no.
-    //there are 3 scenarios: 1-there is no branch in the tree that ends up in dealer busting  2-there is no branch in tree that DOESN'T end up in dealer busting
-    //and 3-there are branches that ends up in busting AND not. In the scenario 1, it's pretty obvious that no matter what Glados does, his probability of winning
-    //doesn't change because in order for that to happen, dealer must also bust and that contradicts with the scenario itself.
-    //In the scenario 2, drawing a card will end up not changing winning probability OR worsen it. Right now, our probability of winning is 1 (draw is also considered
-    //a victory for a couple of reasons) and if we draw a card (let's say, like an 8) that might alter the tree in a way that now, there are some branches that doesn't
-    //end up in dealer busting. And remember, Glados is busted so any kind of value is going to beat him.
-    //And there is the damned scenario 3. Look, all you need to know is that the positive expected value of drawing low value cards (which alters the tree in a way
-    //so that the probability of dealer busting increases than the initial condition) times the probability of drawing those cards card IS EQUAL to the negative
-    //expected value of drawing high value cards (which alters the tree in way so that the probability of dealer busting increases than the initial condition)
-
-    //of course, this is just a conjecture. need someone to prove or disprove it
-
-    if(getPlayerGameValue()==0 || getPlayerGameValue()>19)
-    {
-        return -420.420;
-    }
 
     unsigned int imaginaryCard;
     double expectedValue = 0;
@@ -196,8 +200,7 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
     std::vector<unsigned int> duplicateVector;
     std::map<unsigned int, double> duplicateMap;
 
-    double worstCaseScenario;
-    double bestCaseScenario;
+    double caseScenario;
 
 
     for(int i=0; i<originalDeck.getNumberOfCards(); i++)
@@ -206,21 +209,11 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
         imaginaryCard = originalDeck.getElement(i);
         if(i!=0)
         {
-            worstCaseScenario = (originalDeck.getNumberOfCards()-i)*(-initialWinProb);
-            bestCaseScenario = (originalDeck.getNumberOfCards()-i)*(initialWinProb);
-            if(expectedValue+bestCaseScenario<0)
+            caseScenario = expectedValueCaseDetector(expectedValue,initialWinProb,i,originalDeck.getNumberOfCards());
+            if(caseScenario!=0)
             {
-                std::cout<<"worst case scenario detected in iteration: "<<" "<<i<<"\n";
-                expectedValue = -420.420;
-                return expectedValue;
+                return caseScenario;
             }
-            else if(expectedValue+worstCaseScenario>0)
-            {
-                std::cout<<"best case scenario detected in iteration: "<<" "<<i<<"\n";
-                expectedValue = +420.420;
-                return expectedValue;
-            }
-
             if(duplicateVector.back()==imaginaryCard)
             {
                 expectedValue += duplicateMap[imaginaryCard];
@@ -236,7 +229,6 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
         probBar.clearBar();
         duplicateVector.push_back(imaginaryCard);
         duplicateMap[imaginaryCard]=(imaginaryWinProb-initialWinProb);
-
     }
 
     std::cout<<"e: "<<expectedValue<<"\n";
@@ -258,10 +250,17 @@ void Glados::drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck) {
 
 void Glados::drawCardBasedOnExpectedValue(GameDeck &actualDeck, GameDeck &knownDeck, const unsigned int &dealerOpenCardValue)
 {
+
     double expectedValue;
+    unsigned int gameValue;
     expectedValue = getExpectedValue(knownDeck,dealerOpenCardValue);
     while(expectedValue>0)
     {
+       gameValue = getPlayerGameValue();
+        if(gameValue==0)
+        {
+            return;
+        }
         if(actualDeck.getNumberOfCards()<2)
         {
             actualDeck.createLargeDeck();
@@ -271,6 +270,46 @@ void Glados::drawCardBasedOnExpectedValue(GameDeck &actualDeck, GameDeck &knownD
         expectedValue = getExpectedValue(knownDeck,dealerOpenCardValue);
     }
 }
+
+void Glados::updateValueGained(GameDeck finalKnownDeck, PlayerDeck copycatHand, unsigned int openCardValue)
+{
+    unsigned int gladosHandSize = cardsInsideHand.getNumberOfCards();
+    unsigned int copycatHandSize = copycatHand.getNumberOfCards();
+    if(gladosHandSize==copycatHandSize)
+    {
+        return;
+    }
+
+    ProbBar probBar;
+    double gladosStrategyWinProb;
+    double copycatStrategyWinProb;
+
+    probBar = treeFunction(finalKnownDeck,openCardValue);
+    gladosStrategyWinProb = probBar.getWinProb(cardsInsideHand.getGameValue());
+
+    if(gladosHandSize>copycatHandSize)
+    {
+        for(unsigned int i=gladosHandSize; i>copycatHandSize; i--)
+        {
+            finalKnownDeck.addCard(cardsInsideHand.getElement(i-1));
+        }
+         probBar = treeFunction(finalKnownDeck,openCardValue);
+         copycatStrategyWinProb = probBar.getWinProb(copycatHand.getGameValue());
+    }
+    else
+    {
+        for(unsigned int i=copycatHandSize; i>gladosHandSize; i--)
+        {
+            finalKnownDeck.removeCard(copycatHand.getElement(i-1));
+        }
+        probBar = treeFunction(finalKnownDeck,openCardValue);
+        copycatStrategyWinProb = probBar.getWinProb(copycatHand.getGameValue());
+    }
+    std::cout<<(gladosStrategyWinProb-copycatStrategyWinProb)<<"\n";
+    valueGained += (gladosStrategyWinProb-copycatStrategyWinProb);
+}
+
+
 
 void Dealer::drawCardSoft17(GameDeck &actualDeck, GameDeck &knownDeck)
 {
@@ -290,6 +329,7 @@ void Dealer::drawCardSoft17(GameDeck &actualDeck, GameDeck &knownDeck)
         gameValue = getPlayerGameValue();
     }
 }
+
 
 bool DealerCopycat::canMirrorCard(Glados glados)
 {

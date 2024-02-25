@@ -25,6 +25,7 @@ public:
 
 class Glados:public Player
 {
+    double valueGained = 0;
 public:
     ProbBar treeFunction(GameDeck originalDeck, unsigned int openCardValue);
     double getExpectedValue(GameDeck originalDeck, unsigned int openCardValue);
@@ -32,6 +33,9 @@ public:
     void drawSpecificCard(unsigned int cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck);
     void drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck);
     void drawCardBasedOnExpectedValue(GameDeck &actualDeck, GameDeck &knownDeck, const unsigned int &dealerOpenCardValue);
+    double expectedValueCaseDetector(double expectedValue,double initialWinProb,const unsigned int &iteration,const unsigned int &deckSize);
+
+    void updateValueGained(GameDeck finalKnownDeck, PlayerDeck copycatHand, unsigned int openCardValue);
 };
 
 class Dealer: public Player
