@@ -18,6 +18,8 @@ struct Deck
     void printCards();
     void equalizeDeck(const Deck& deckToCopy);
     unsigned int getElement(unsigned int index);
+    std::vector<std::vector<unsigned int>> getCardCombinations(unsigned int selectionSize);
+    void generateCombinations(unsigned int selectionSize, unsigned int startIndex, std::vector<unsigned int>& currentCombination, std::vector<std::vector<unsigned int>>& combinations);
 };
 
 struct PlayerDeck:public Deck
@@ -26,6 +28,7 @@ struct PlayerDeck:public Deck
     unsigned int getOpenCardValue();
     unsigned int getTotalValue();
     unsigned int getGameValue();
+
 };
 
 class GameDeck:public Deck
@@ -38,5 +41,23 @@ public:
     void removeCardsForTreeOperation(PlayerDeck nodeCards);
     unsigned int getRandomCard();
     GameDeck(unsigned int deckMultiplier);
+
+    std::vector<PlayerDeck> createCombinationHands(std::vector<std::vector<unsigned int>> combinationVector);
 };
+
+struct CardRemovalError : public std::exception
+{
+    const char* what();
+};
+
+struct OutOfCards : public std::exception
+{
+    const char* what();
+};
+
+struct AsyncDecks : public std::exception
+{
+    const char* what();
+};
+
 #endif //BLACKJACK_REAL_DECK_H

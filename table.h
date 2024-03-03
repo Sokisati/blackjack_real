@@ -17,14 +17,24 @@ public:
     Glados glados;
     DealerCopycat copycat;
     std::fstream resultTxt;
+    GameDeck actualDeck;
+    GameDeck knownDeck;
+    GameDeck ghostDeck;
+    GameDeck actualDeckCopy;
+    int copycatIndex = 0;
+    unsigned int copycatRepetition;
 
 
-    Table();
+    Table(unsigned int deckMultiplier, unsigned int copycatRepetition);
     void startNormalGame();
     void startSimulation(unsigned int roundToWin, unsigned int simulationToWin);
-    void dealCards(Glados &glados, Dealer &dealer, GameDeck &actualDeck, GameDeck &knownDeck);
-    void endRound(GameDeck &actualDeck, GameDeck &knownDeck);
-    void writeResultsToTxt(GameDeck gameDeck);
+    void dealCards();
+    void endRound(unsigned int roundToWin);
+    void startRound();
+    void writeResultsToTxt();
+    void printHands();
+    int gladosVCopycat(unsigned int gladosGameValue, unsigned int dealerGameValue, unsigned int copycatGameValue);
+    void updateComplexCopycatIndex(unsigned int repetition, const GameDeck& actualDeckOriginal, Glados gladosClone, Dealer dealerClone, DealerCopycat copycatClone);
 
 };
 

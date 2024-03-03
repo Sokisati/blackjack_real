@@ -34,14 +34,13 @@ public:
     void drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck);
     void drawCardBasedOnExpectedValue(GameDeck &actualDeck, GameDeck &knownDeck, const unsigned int &dealerOpenCardValue);
     double expectedValueCaseDetector(double expectedValue,double initialWinProb,const unsigned int &iteration,const unsigned int &deckSize);
-
-    void updateValueGained(GameDeck finalKnownDeck, PlayerDeck copycatHand, unsigned int openCardValue);
+    unsigned int getImaginaryHandValueCombinationHand(PlayerDeck playerDeckToAdd);
 };
 
 class Dealer: public Player
 {
 public:
-    void drawCardSoft17(GameDeck &actualDeck, GameDeck &knownDeck);
+    void drawCardSoft17(GameDeck &actualDeck);
 };
 
 class DealerCopycat : public Dealer

@@ -19,6 +19,7 @@ ProbBar::ProbBar()
 
 void ProbBar::addProb(double prob,unsigned int deckValue)
 {
+
     switch (deckValue)
     {
         case 0:
@@ -39,16 +40,19 @@ void ProbBar::addProb(double prob,unsigned int deckValue)
         case 21:
             probArray[5] += prob;
             break;
+        default:
+            throw std::logic_error("Value not found in prob bar");
     }
 }
 
 void ProbBar::printBar()
 {
-    std::cout<<"0: "<<probArray[0]<<"\n";
+    std::cout<<"Bar  0: "<<probArray[0]<<"\n";
     for(int i=1; i<6; i++)
     {
-        std::cout<<i+16<<" "<<probArray[i]<<"\n";
+        std::cout<<"Bar  "<<i+16<<" "<<probArray[i]<<"\n";
     }
+    std::cout<<"\n";
 }
 
 double ProbBar::getWinProb(unsigned int handValue)

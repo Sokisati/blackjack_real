@@ -4,6 +4,21 @@
 #include "deck.h"
 #include "iostream"
 
+const char* AsyncDecks::what()
+{
+    return "Known deck async with actual deck";
+}
+
+const char* OutOfCards::what()
+{
+    return "Out of cards";
+}
+
+const char* CardRemovalError::what()
+{
+ return "Card to remove couldn't be found!";
+}
+
 unsigned int Deck::getNumberOfCards()
 {
     return cards.size();
@@ -27,10 +42,10 @@ void Deck::removeCard(unsigned int cardToRemove)
                 break;
         }
     }
-    //TODO
+
     if(error)
     {
-            throw "Card to remove couldn't be found!";
+        throw CardRemovalError();
     }
 }
 
@@ -56,6 +71,27 @@ void Deck::printCards()
 void Deck::equalizeDeck(const Deck& deckToCopy)
 {
     this->cards = deckToCopy.cards;
+}
+
+std::vector<std::vector<unsigned int>> Deck::getCardCombinations(unsigned int selectionSize)
+{
+    std::vector<std::vector<unsigned int>> combinations;
+    std::vector<unsigned int> current_combination;
+    generateCombinations(selectionSize, 0, current_combination, combinations);
+    return combinations;
+}
+
+void Deck::generateCombinations(unsigned int selectionSize, unsigned int startIndex, std::vector<unsigned int>& currentCombination, std::vector<std::vector<unsigned int>>& combinations) {
+    if (selectionSize == 0) {
+        combinations.push_back(currentCombination);
+        return;
+    }
+
+    for (unsigned int i = startIndex; i < cards.size(); ++i) {
+        currentCombination.push_back(cards[i]);
+        generateCombinations(selectionSize - 1, i + 1, currentCombination, combinations);
+        currentCombination.pop_back();
+    }
 }
 
 
@@ -116,6 +152,24 @@ unsigned int PlayerDeck::getOpenCardValue()
     return this->cards[0];
 }
 
+std::vector<PlayerDeck> GameDeck::createCombinationHands(std::vector<std::vector<unsigned int>> combinationVector)
+{
+    unsigned int selectionSize = combinationVector[0].size();
+    std::vector<PlayerDeck> combinationHands;
+
+    for(int i=0; i<combinationVector.size(); i++)
+    {
+        PlayerDeck tempDeck;
+        for(int k=0; k<selectionSize; k++)
+        {
+            tempDeck.addCard(combinationVector[i][k]);
+        }
+        combinationHands.push_back(tempDeck);
+    }
+
+    return combinationHands;
+}
+
 
 GameDeck::GameDeck(unsigned int deckMultiplier)
 {
@@ -130,9 +184,11 @@ void GameDeck::createDebugDeck()
 {
     cards.clear();
     addCard(2);
-    addCard(5);
-    addCard(6);
-    addCard(11);
+    addCard(3);
+    addCard(3);
+    addCard(4);
+    addCard(10);
+
 }
 
 void GameDeck::createLargeDeck()
