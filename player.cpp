@@ -272,6 +272,10 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
 
     if(expectedValue==0)
     {
+        if(originalDeck.getNumberOfCards()<6)
+        {
+            throw OutOfCards();
+        }
         unsigned int selection = 2;
         unsigned int numberOfCombinations;
 
