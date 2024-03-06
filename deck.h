@@ -20,6 +20,7 @@ struct Deck
     unsigned int getElement(unsigned int index);
     std::vector<std::vector<unsigned int>> getCardCombinations(unsigned int selectionSize);
     void generateCombinations(unsigned int selectionSize, unsigned int startIndex, std::vector<unsigned int>& currentCombination, std::vector<std::vector<unsigned int>>& combinations);
+
 };
 
 struct PlayerDeck:public Deck

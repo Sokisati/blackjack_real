@@ -270,7 +270,7 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
     //or it can decrease or increase
     //one way to find out:
 
-    if(expectedValue==0)
+    if((round(expectedValue * 1e8) / 1e8)==0)
     {
         if(originalDeck.getNumberOfCards()<6)
         {
@@ -285,6 +285,14 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
 
         for(int i=0; i<numberOfCombinations; i++)
         {
+            if(i!=0)
+            {
+                caseScenario = expectedValueCaseDetector(expectedValue,initialWinProb,i,numberOfCombinations);
+                if(caseScenario!=0)
+                {
+                    return caseScenario;
+                }
+            }
             imaginaryDeck.equalizeDeck(originalDeck);
             imaginaryHandValue = getImaginaryHandValueCombinationHand(possibleHands[i]);
             for(int k=0; k<selection; k++)
@@ -299,7 +307,9 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
     }
 
     std::cout<<"e: "<<expectedValue<<"\n";
-    return expectedValue;
+    return round(expectedValue * 1e8) / 1e8;
+
+
 }
 
 void Glados::drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck)

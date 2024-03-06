@@ -79,7 +79,6 @@ void Table::startNormalGame()
         knownDeck.equalizeDeck(actualDeck);
         knownDeck.printCards();
         actualDeck.printCards();
-
     }
 
     std::cout<<"glados: "<<glados.roundScore<<" "<<" dealer:"<<dealer.roundScore<<"\n";
@@ -156,9 +155,6 @@ void Table::endRound(unsigned int roundToWin)
     {
         dealer.addRoundScore();
     }
-
-
-
 
     glados.clearHand();
     dealer.clearHand();
