@@ -61,9 +61,9 @@ void Deck::clearDeck()
 
 void Deck::printCards()
 {
-    for(auto i: cards)
+    for(unsigned int card: cards)
     {
-        std::cout<<i<<" ";
+        std::cout<<card<<" ";
     }
     std::cout<<"\n";
 }
@@ -71,6 +71,15 @@ void Deck::printCards()
 void Deck::equalizeDeck(const Deck& deckToCopy)
 {
     this->cards = deckToCopy.cards;
+}
+
+void Deck::writeCards(std::fstream &txt)
+{
+    for(unsigned int card : cards)
+    {
+        txt<<card<<" ";
+    }
+    txt<<"\n";
 }
 
 std::vector<std::vector<unsigned int>> Deck::getCardCombinations(unsigned int selectionSize)

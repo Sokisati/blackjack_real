@@ -7,6 +7,7 @@
 #define BLACKJACK_REAL_DECK_H
 
 #include "vector"
+#include "fstream"
 
 struct Deck
 {
@@ -18,6 +19,7 @@ struct Deck
     void printCards();
     void equalizeDeck(const Deck& deckToCopy);
     unsigned int getElement(unsigned int index);
+    void writeCards(std::fstream &txt);
     std::vector<std::vector<unsigned int>> getCardCombinations(unsigned int selectionSize);
     void generateCombinations(unsigned int selectionSize, unsigned int startIndex, std::vector<unsigned int>& currentCombination, std::vector<std::vector<unsigned int>>& combinations);
 

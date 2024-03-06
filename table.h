@@ -31,9 +31,7 @@ public:
     void dealCards();
     void endRound(unsigned int roundToWin);
     void startRound();
-    void writeResultsToTxt();
     void printHands();
-    int gladosVCopycat(unsigned int gladosGameValue, unsigned int dealerGameValue, unsigned int copycatGameValue);
     void updateComplexCopycatIndex(unsigned int repetition, const GameDeck& actualDeckOriginal, Glados gladosClone, Dealer dealerClone, DealerCopycat copycatClone);
 
 };

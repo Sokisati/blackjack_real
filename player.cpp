@@ -270,7 +270,7 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
     //or it can decrease or increase
     //one way to find out:
 
-    if((round(expectedValue * 1e8) / 1e8)==0)
+    if(expectedValue==0 && getPlayerGameValue()<=10)
     {
         if(originalDeck.getNumberOfCards()<6)
         {
@@ -307,7 +307,7 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
     }
 
     std::cout<<"e: "<<expectedValue<<"\n";
-    return round(expectedValue * 1e8) / 1e8;
+    return expectedValue;
 
 
 }

@@ -93,6 +93,14 @@ void Table::printHands()
     dealer.printSubjectCards();
     std::cout<<"Copycat hand:";
     copycat.printSubjectCards();
+
+    resultTxt<<"Glados hand: ";
+    glados.cardsInsideHand.writeCards(resultTxt);
+    resultTxt<<"Dealer hand: ";
+    dealer.cardsInsideHand.writeCards(resultTxt);
+    resultTxt<<"Copycat hand:";
+    copycat.cardsInsideHand.writeCards(resultTxt);
+
 }
 
 void Table::dealCards()
@@ -115,37 +123,11 @@ void Table::dealCards()
     }
 }
 
-int Table::gladosVCopycat(unsigned int gladosGameValue, unsigned int dealerGameValue, unsigned int copycatGameValue)
-{
-
-        if(gladosGameValue>dealerGameValue&&(copycatGameValue<dealerGameValue||copycatGameValue==dealerGameValue))
-        {
-            return 1;
-        }
-        else if(copycatGameValue>dealerGameValue&&(gladosGameValue<dealerGameValue||gladosGameValue==dealerGameValue))
-        {
-            return -1;
-        }
-        else if(gladosGameValue==dealerGameValue&&copycatGameValue<dealerGameValue)
-        {
-            return 1;
-        }
-        else if(copycatGameValue==dealerGameValue&&gladosGameValue<dealerGameValue)
-        {
-            return -1;
-        }
-        else
-        {
-            return 0;
-        }
-}
-
 void Table::endRound(unsigned int roundToWin)
 {
-
-
     printHands();
     std::cout<<"cc index: "<<copycatIndex<<"\n";
+    resultTxt<<"cc index: "<<copycatIndex<<"\n";
 
     if(glados.getPlayerGameValue()>dealer.getPlayerGameValue())
     {
@@ -176,44 +158,7 @@ void Table::endRound(unsigned int roundToWin)
 
 
     std::cout<<"\n";
-}
-
-void Table::writeResultsToTxt()
-{
-
-    resultTxt<<"Glados hand: ";
-    for(unsigned int card: glados.cardsInsideHand.cards)
-    {
-        resultTxt<<card<<" ";
-    }
     resultTxt<<"\n";
-
-    resultTxt<<"Dealer hand: ";
-    for(unsigned int card: dealer.cardsInsideHand.cards)
-    {
-        resultTxt<<card<<" ";
-    }
-    resultTxt<<"\n";
-
-    resultTxt<<"Copycat hand: ";
-    for(unsigned int card: copycat.cardsInsideHand.cards)
-    {
-        resultTxt<<card<<" ";
-    }
-    resultTxt<<"\n";
-
-    if(copycat.getCards()!=glados.getCards())
-    {
-        for(unsigned int card: knownDeck.cards)
-        {
-            resultTxt<<card<<" ";
-        }
-        resultTxt<<"\n";
-    }
-
-    resultTxt<<"\n";
-    resultTxt<<"\n";
-
 }
 
 void Table::startRound()
@@ -441,8 +386,10 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
         endRound(roundToWin);
 
         std::cout<<"\n\n";
+        resultTxt<<"\n\n";
     }
     std::cout<<"glados: "<<glados.simulationScore<<" "<<" dealer:"<<dealer.simulationScore<<"\n";
+    resultTxt<<"glados: "<<glados.simulationScore<<" "<<" dealer:"<<dealer.simulationScore<<"\n";
 
     resultTxt.close();
 }

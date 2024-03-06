@@ -10,7 +10,5 @@ int main()
  table.startSimulation(6,30);
 
 
-
-
-    return 0;
+ return 0;
 }
