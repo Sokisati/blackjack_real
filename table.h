@@ -22,12 +22,12 @@ public:
     GameDeck ghostDeck;
     GameDeck actualDeckCopy;
     int copycatIndex = 0;
-    unsigned int copycatRepetition;
 
 
-    Table(unsigned int deckMultiplier, unsigned int copycatRepetition);
+
+    Table(unsigned int deckMultiplier);
     void startNormalGame();
-    void startSimulation(unsigned int roundToWin, unsigned int simulationToWin);
+    void startSimulation(unsigned int roundToWin, unsigned int simulationToWin, unsigned int scenarioRepetition);
     void dealCards();
     void endRound(unsigned int roundToWin);
     void startRound();

@@ -2,11 +2,10 @@
 // Created by yagiz on 2/22/2024.
 //
 #include "player.h"
-#include <random>
 #include "map"
 #include "iostream"
 
-void Player::drawImaginaryCard(unsigned int cardToDraw)
+void Player::drawImaginaryCard(card_t cardToDraw)
 {
     cardsInsideHand.addCard(cardToDraw);
 }
@@ -16,19 +15,14 @@ void Player::printSubjectCards()
     cardsInsideHand.printCards();
 }
 
-unsigned Player::getPlayerOpenCardValue()
+card_t Dealer::getPlayerOpenCard()
 {
-    return cardsInsideHand.getOpenCardValue();;
+    return cardsInsideHand.getOpenCard();
 }
 
-unsigned Player::getPlayerGameValue()
+unsigned int Player::getPlayerGameValue()
 {
     return cardsInsideHand.getGameValue();
-}
-
-std::vector<int> Player::getCards()
-{
-    return cardsInsideHand.cards;
 }
 
 void Player::clearHand()
@@ -58,19 +52,14 @@ void Player::drawRandomCard(GameDeck &actualDeck)
         throw OutOfCards();
     }
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, actualDeck.getNumberOfCards() - 1);
-
-    unsigned int randomIndex = dis(gen);
-    unsigned int randomCard = actualDeck.getElement(randomIndex);
-
-    actualDeck.removeCard(randomCard);
+    card_t randomCard = actualDeck.getRandomCard();
     cardsInsideHand.addCard(randomCard);
+    actualDeck.removeCard(randomCard);
+
 }
 
 
-void Glados::drawSpecificCard(unsigned int cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck)
+void Glados::drawSpecificCard(card_t cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck)
 {
     if(actualDeck.getNumberOfCards()==0)
     {
@@ -81,7 +70,7 @@ void Glados::drawSpecificCard(unsigned int cardToDraw, GameDeck &actualDeck, Gam
     knownDeck.removeCard(cardToDraw);
 }
 
-ProbBar Glados::treeFunction(GameDeck originalDeck, unsigned int openCardValue)
+ProbBar Glados::treeFunction(GameDeck originalDeck, card_t openCard)
 {
     //something is fishy about this function. it only took like 2 hours. there is definitely a bug somewhere...
 
@@ -92,7 +81,7 @@ ProbBar Glados::treeFunction(GameDeck originalDeck, unsigned int openCardValue)
     //the initial nodes
     for(int i=0; i<deckSize; i++)
     {
-        tempDeck.addCard(openCardValue);
+        tempDeck.addCard(openCard);
         tempDeck.addCard(originalDeck.cards[i]);
         TreeNode node(tempDeck,deckSize,1);
         nodeVector.push_back(node);
@@ -132,7 +121,7 @@ ProbBar Glados::treeFunction(GameDeck originalDeck, unsigned int openCardValue)
 
                 for(int k=0; k<tempImaginaryDeckSize; k++)
                 {
-                    tempNodeDeck.equalizeDeck(nodeVector[i].cardsInside);
+                    tempNodeDeck.copyDeck(nodeVector[i].cardsInside);
                     tempNodeDeck.addCard(tempImaginaryDeck.getElement(k));
                     TreeNode node(tempNodeDeck,tempImaginaryDeckSize,nodeVector[i].selfProbability);
                     nodeVector.push_back(node);
@@ -149,19 +138,19 @@ ProbBar Glados::treeFunction(GameDeck originalDeck, unsigned int openCardValue)
     }
 
 
-    for(auto & d : nodeVector)
+    for(auto & node : nodeVector)
     {
-        unsigned int gameValue = d.cardsInside.getGameValue();
+        unsigned int gameValue = node.cardsInside.getGameValue();
         if(gameValue==0 || gameValue>=17)
         {
-            probBar.addProb(d.selfProbability,gameValue);
+            probBar.addProb(node.selfProbability,gameValue);
         }
     }
 
     return probBar;
 }
 
-unsigned int Glados::getImaginaryHandValue(unsigned int imaginaryCardToDraw)
+unsigned int Glados::getImaginaryHandValue(card_t imaginaryCardToDraw)
 {
     cardsInsideHand.addCard(imaginaryCardToDraw);
     unsigned int imaginaryHandValue = getPlayerGameValue();
@@ -204,26 +193,25 @@ unsigned int Glados::getImaginaryHandValueCombinationHand(PlayerDeck playerDeckT
     return imaginaryHandValue;
 }
 
-double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValue)
+double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCard)
 {
-
-    unsigned int imaginaryCard;
+    if(getPlayerGameValue()==0)
+    {
+        return -1;
+    }
+    card_t imaginaryCard;
     double expectedValue = 0;
     ProbBar probBar;
     GameDeck imaginaryDeck(originalDeck.deckMultiplier);
-    imaginaryDeck.equalizeDeck(originalDeck);
+    imaginaryDeck.copyDeck(originalDeck);
     double initialWinProb;
     double imaginaryWinProb;
-    probBar = treeFunction(originalDeck,openCardValue);
+    probBar = treeFunction(originalDeck,openCard);
 
     initialWinProb = probBar.getWinProb(getPlayerGameValue());
 
     std::cout<<"iwp "<<initialWinProb<<"\n";
 
-    if(initialWinProb==1)
-    {
-        return -1;
-    }
 
     unsigned int imaginaryHandValue;
     probBar.clearBar();
@@ -235,12 +223,10 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
 
     for(int i=0; i<originalDeck.getNumberOfCards(); i++)
     {
-
         imaginaryCard = originalDeck.getElement(i);
 
         if(i!=0)
         {
-
             caseScenario = expectedValueCaseDetector(expectedValue,initialWinProb,i,originalDeck.getNumberOfCards());
             if(caseScenario!=0)
             {
@@ -253,13 +239,12 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
                 continue;
             }
         }
-
         imaginaryDeck.removeCard(imaginaryCard);
         imaginaryHandValue = getImaginaryHandValue(imaginaryCard);
-        probBar = treeFunction(imaginaryDeck,openCardValue);
+        probBar = treeFunction(imaginaryDeck,openCard);
         imaginaryWinProb = probBar.getWinProb(imaginaryHandValue);
         expectedValue += (imaginaryWinProb-initialWinProb);
-        imaginaryDeck.equalizeDeck(originalDeck);
+        imaginaryDeck.copyDeck(originalDeck);
         probBar.clearBar();
         duplicateVector.push_back(imaginaryCard);
         duplicateMap[imaginaryCard]=(imaginaryWinProb-initialWinProb);
@@ -270,7 +255,7 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
     //or it can decrease or increase
     //one way to find out:
 
-    if(expectedValue==0 && getPlayerGameValue()<=10)
+    if(expectedValue<0.1 && getPlayerGameValue()<=10)
     {
         if(originalDeck.getNumberOfCards()<6)
         {
@@ -279,7 +264,7 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
         unsigned int selection = 2;
         unsigned int numberOfCombinations;
 
-        std::vector<std::vector<unsigned int>> combinationVector = originalDeck.getCardCombinations(selection);
+        std::vector<std::vector<card_t>> combinationVector = originalDeck.getCardCombinations(selection);
         std::vector<PlayerDeck> possibleHands = imaginaryDeck.createCombinationHands(combinationVector);
         numberOfCombinations = possibleHands.size();
 
@@ -293,13 +278,13 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCardValu
                     return caseScenario;
                 }
             }
-            imaginaryDeck.equalizeDeck(originalDeck);
+            imaginaryDeck.copyDeck(originalDeck);
             imaginaryHandValue = getImaginaryHandValueCombinationHand(possibleHands[i]);
             for(int k=0; k<selection; k++)
             {
                 imaginaryDeck.removeCard(possibleHands[i].getElement(k));
             }
-            probBar = treeFunction(imaginaryDeck,openCardValue);
+            probBar = treeFunction(imaginaryDeck,openCard);
             imaginaryWinProb = probBar.getWinProb(imaginaryHandValue);
             expectedValue += (imaginaryWinProb-initialWinProb);
             probBar.clearBar();
@@ -319,16 +304,12 @@ void Glados::drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck)
         throw OutOfCards();
     }
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, actualDeck.getNumberOfCards() - 1);
 
-    unsigned int randomIndex = dis(gen);
-    unsigned int randomCard = actualDeck.getElement(randomIndex);
+    card_t randomCard = actualDeck.getRandomCard();
+    cardsInsideHand.addCard(randomCard);
 
     actualDeck.removeCard(randomCard);
-    knownDeck.equalizeDeck(actualDeck);
-    cardsInsideHand.addCard(randomCard);
+    knownDeck.copyDeck(actualDeck);
 }
 
 void Glados::drawCardBasedOnExpectedValue(GameDeck &actualDeck, GameDeck &knownDeck, const unsigned int &dealerOpenCardValue)
@@ -353,8 +334,6 @@ void Glados::drawCardBasedOnExpectedValue(GameDeck &actualDeck, GameDeck &knownD
         expectedValue = getExpectedValue(knownDeck,dealerOpenCardValue);
     }
 }
-
-
 
 void Dealer::drawCardSoft17(GameDeck &actualDeck)
 {

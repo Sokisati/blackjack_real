@@ -2,7 +2,11 @@
 // Created by yagiz on 2/22/2024.
 //
 #include "deck.h"
-#include "iostream"
+
+const char*  NotThreadApplicable::what()
+{
+    return "Too few cards for multithreading";
+}
 
 const char* AsyncDecks::what()
 {
@@ -24,12 +28,12 @@ unsigned int Deck::getNumberOfCards()
     return cards.size();
 }
 
-unsigned int Deck::getElement(unsigned int index)
+card_t Deck::getElement(unsigned int index)
 {
     return cards[index];
 }
 
-void Deck::removeCard(unsigned int cardToRemove)
+void Deck::removeCard(card_t cardToRemove)
 {
     bool error = true;
 
@@ -49,7 +53,7 @@ void Deck::removeCard(unsigned int cardToRemove)
     }
 }
 
-void Deck::addCard(unsigned int cardToAdd)
+void Deck::addCard(card_t cardToAdd)
 {
     this->cards.push_back(cardToAdd);
 }
@@ -61,28 +65,28 @@ void Deck::clearDeck()
 
 void Deck::printCards()
 {
-    for(unsigned int card: cards)
+    for(card_t card: cards)
     {
         std::cout<<card<<" ";
     }
     std::cout<<"\n";
 }
 
-void Deck::equalizeDeck(const Deck& deckToCopy)
+void Deck::copyDeck(const Deck& deckToCopy)
 {
     this->cards = deckToCopy.cards;
 }
 
 void Deck::writeCards(std::fstream &txt)
 {
-    for(unsigned int card : cards)
+    for(card_t card : cards)
     {
         txt<<card<<" ";
     }
     txt<<"\n";
 }
 
-std::vector<std::vector<unsigned int>> Deck::getCardCombinations(unsigned int selectionSize)
+std::vector<std::vector<card_t>> Deck::getCardCombinations(unsigned int selectionSize)
 {
     std::vector<std::vector<unsigned int>> combinations;
     std::vector<unsigned int> current_combination;
@@ -107,9 +111,9 @@ void Deck::generateCombinations(unsigned int selectionSize, unsigned int startIn
 unsigned int PlayerDeck::getTotalValue()
 {
     unsigned int sum = 0;
-    for(auto i: cards)
+    for(card_t card : cards)
     {
-        sum += i;
+        sum += card;
     }
     return sum;
 }
@@ -117,9 +121,9 @@ unsigned int PlayerDeck::getTotalValue()
 unsigned int PlayerDeck::getNumberOfAces()
 {
     unsigned int numberOfAces = 0;
-    for(auto i: cards)
+    for(card_t card : cards)
     {
-        if(i==11)
+        if(card==11)
         {
             numberOfAces++;
         }
@@ -151,7 +155,7 @@ unsigned int PlayerDeck::getGameValue()
     }
 }
 
-unsigned int PlayerDeck::getOpenCardValue()
+card_t PlayerDeck::getOpenCard()
 {
     if(getNumberOfCards()==0)
     {
@@ -161,7 +165,8 @@ unsigned int PlayerDeck::getOpenCardValue()
     return this->cards[0];
 }
 
-std::vector<PlayerDeck> GameDeck::createCombinationHands(std::vector<std::vector<unsigned int>> combinationVector)
+
+std::vector<PlayerDeck> GameDeck::createCombinationHands(std::vector<std::vector<card_t>> combinationVector)
 {
     unsigned int selectionSize = combinationVector[0].size();
     std::vector<PlayerDeck> combinationHands;
@@ -179,24 +184,31 @@ std::vector<PlayerDeck> GameDeck::createCombinationHands(std::vector<std::vector
     return combinationHands;
 }
 
-
 GameDeck::GameDeck(unsigned int deckMultiplier)
 {
     clearDeck();
 
     this->deckMultiplier = deckMultiplier;
 
+    rng.seed(std::random_device()());
     createLargeDeck();
+}
+card_t GameDeck::getRandomCard()
+{
+    std::uniform_int_distribution<unsigned int> distribution(0, cards.size() - 1);
+    return cards[distribution(rng)];
 }
 
 void GameDeck::createDebugDeck()
 {
     cards.clear();
     addCard(2);
-    addCard(3);
-    addCard(3);
-    addCard(4);
+    addCard(5);
+    addCard(6);
+    addCard(7);
+    addCard(8);
     addCard(10);
+    addCard(11);
 
 }
 
@@ -241,9 +253,70 @@ void GameDeck::resetDeck()
 
 void GameDeck::removeCardsForTreeOperation(PlayerDeck nodeCards)
 {
-    for(int i=nodeCards.getNumberOfCards()-1; i>0; i--)
+    for(unsigned int i=nodeCards.getNumberOfCards()-1; i>0; i--)
     {
         unsigned int cardToRemove = nodeCards.getElement(i);
         removeCard(cardToRemove);
     }
 }
+/*
+std::vector<GameDeck> GameDeck::getTaskDeckVector(unsigned int numberOfThreads)
+{
+    std::vector<GameDeck> briefTaskDeckVector;
+    std::vector<GameDeck> taskDeckVector;
+    GameDeck taskDeckTemp(1);
+
+    std::vector<unsigned int> differentCards;
+    differentCards.push_back(cards[0]);
+
+    for(int element=1; element<cards.size(); element++)
+    {
+       if(cards[element]!=differentCards.back())
+       {
+           differentCards.push_back(cards[element]);
+       }
+    }
+
+    if(differentCards.size()<numberOfThreads)
+    {
+        throw NotThreadApplicable();
+    }
+
+    unsigned int taskLoad = differentCards.size()/numberOfThreads;
+    unsigned int taskIndex = 0;
+
+    //keep in mind: size of differentCards vector may not be equally dividable by number of threads
+    //for this, last thread gets the remaining labour (it can be more or less)
+    for(unsigned int threadNo=0; threadNo<numberOfThreads-1; threadNo++)
+    {
+        taskDeckTemp.clearDeck();
+        for(unsigned int index = taskIndex; index<taskLoad; index++)
+        {
+            taskDeckTemp.addCard(differentCards[taskIndex]);
+            taskIndex++;
+        }
+        briefTaskDeckVector.push_back(taskDeckTemp);
+    }
+
+    taskDeckTemp.clearDeck();
+
+    //last thread gets the job done
+    for(unsigned int element=taskIndex; element<differentCards.size(); element++)
+    {
+        taskDeckTemp.addCard(differentCards[element]);
+    }
+
+    briefTaskDeckVector.push_back(taskDeckTemp);
+
+    //now, threads should know what their real job is
+    for(unsigned int threads=0; threads<numberOfThreads-1; threads++)
+    {
+        taskDeckTemp.clearDeck();
+        for(unsigned int element=0; element<taskLoad; element++)
+        {
+            taskDeckTemp.addCard(briefTaskDeckVector)
+        }
+    }
+
+
+}*/

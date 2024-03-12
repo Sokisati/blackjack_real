@@ -13,9 +13,7 @@ public:
     unsigned int simulationScore = 0;
     PlayerDeck cardsInsideHand;
     void printSubjectCards();
-    unsigned getPlayerOpenCardValue();
-    unsigned getPlayerGameValue();
-    std::vector<int> getCards();
+    unsigned int getPlayerGameValue();
     void clearHand();
     void drawSpecificCard(unsigned int cardToDraw,GameDeck &actualDeck);
     void addRoundScore();
@@ -25,12 +23,11 @@ public:
 
 class Glados:public Player
 {
-    double valueGained = 0;
 public:
     ProbBar treeFunction(GameDeck originalDeck, unsigned int openCardValue);
-    double getExpectedValue(GameDeck originalDeck, unsigned int openCardValue);
-    unsigned int getImaginaryHandValue(unsigned int imaginaryCardToDraw);
-    void drawSpecificCard(unsigned int cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck);
+    double getExpectedValue(GameDeck originalDeck, unsigned int openCard);
+    unsigned int getImaginaryHandValue(card_t imaginaryCardToDraw);
+    void drawSpecificCard(card_t cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck);
     void drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck);
     void drawCardBasedOnExpectedValue(GameDeck &actualDeck, GameDeck &knownDeck, const unsigned int &dealerOpenCardValue);
     double expectedValueCaseDetector(double expectedValue,double initialWinProb,const unsigned int &iteration,const unsigned int &deckSize);
@@ -40,6 +37,7 @@ public:
 class Dealer: public Player
 {
 public:
+    card_t getPlayerOpenCard();
     void drawCardSoft17(GameDeck &actualDeck);
 };
 

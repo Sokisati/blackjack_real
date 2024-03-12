@@ -6,10 +6,9 @@
 #include "player.h"
 #include "iostream"
 
-Table::Table(unsigned int deckMultiplier, unsigned int copycatRepetition) : actualDeck(deckMultiplier), knownDeck(deckMultiplier), ghostDeck(deckMultiplier),
+Table::Table(unsigned int deckMultiplier) : actualDeck(deckMultiplier), knownDeck(deckMultiplier), ghostDeck(deckMultiplier),
                                             actualDeckCopy(deckMultiplier)
 {
-    this->copycatRepetition = copycatRepetition;
    resultTxt.open("test_results.txt",std::ios::out);
 }
 
@@ -46,8 +45,8 @@ void Table::startNormalGame()
         std::cout<<"And what's the dealers open card?"<<"\n";
         std::cin>>dealerOpenCard;
         dealer.drawSpecificCard(dealerOpenCard,actualDeck);
-        knownDeck.removeCard(dealer.getPlayerOpenCardValue());
-        expectedValue = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCardValue());
+        knownDeck.removeCard(dealer.getPlayerOpenCard());
+        expectedValue = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
         glados.drawCardBasedOnExpectedValue(actualDeck,knownDeck,dealerOpenCard);
         std::cout<<"I don't want any/more cards"<<"\n";
         while(true)
@@ -76,7 +75,7 @@ void Table::startNormalGame()
         }
         glados.clearHand();
         dealer.clearHand();
-        knownDeck.equalizeDeck(actualDeck);
+        knownDeck.copyDeck(actualDeck);
         knownDeck.printCards();
         actualDeck.printCards();
     }
@@ -109,9 +108,9 @@ void Table::dealCards()
     glados.drawRandomCard(actualDeck,knownDeck);
     dealer.drawRandomCard(actualDeck);
     dealer.drawRandomCard(actualDeck);
-    copycat.cardsInsideHand.equalizeDeck(glados.cardsInsideHand);
+    copycat.cardsInsideHand.copyDeck(glados.cardsInsideHand);
 
-    knownDeck.removeCard(dealer.getPlayerOpenCardValue());
+    knownDeck.removeCard(dealer.getPlayerOpenCard());
 
     if(actualDeck.getNumberOfCards()+1!=knownDeck.getNumberOfCards())
     {
@@ -126,6 +125,7 @@ void Table::dealCards()
 void Table::endRound(unsigned int roundToWin)
 {
     printHands();
+
     std::cout<<"cc index: "<<copycatIndex<<"\n";
     resultTxt<<"cc index: "<<copycatIndex<<"\n";
 
@@ -141,7 +141,7 @@ void Table::endRound(unsigned int roundToWin)
     glados.clearHand();
     dealer.clearHand();
     copycat.clearHand();
-    knownDeck.equalizeDeck(actualDeck);
+    knownDeck.copyDeck(actualDeck);
 
     if(glados.roundScore==roundToWin)
     {
@@ -156,7 +156,8 @@ void Table::endRound(unsigned int roundToWin)
         dealer.roundScore=0;
     }
 
-
+    std::cout<<"glados rs: "<<glados.roundScore<<" dealer rs: "<<dealer.roundScore<<"\n";
+    std::cout<<"glados ss: "<<glados.simulationScore<<" dealer ss: "<<dealer.simulationScore<<"\n";
     std::cout<<"\n";
     resultTxt<<"\n";
 }
@@ -164,11 +165,11 @@ void Table::endRound(unsigned int roundToWin)
 void Table::startRound()
 {
     actualDeck.printCards();
-    actualDeckCopy.equalizeDeck(actualDeck);
+    actualDeckCopy.copyDeck(actualDeck);
     glados.clearHand();
     dealer.clearHand();
     copycat.clearHand();
-    knownDeck.equalizeDeck(actualDeck);
+    knownDeck.copyDeck(actualDeck);
     dealCards();
 }
 
@@ -176,7 +177,7 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
 {
     //this is definitely the worst method in this program, don't think too much about it
 
-    unsigned int dealerFirstCard = dealerClone.getPlayerOpenCardValue();
+    unsigned int dealerFirstCard = dealerClone.getPlayerOpenCard();
     unsigned int gladosFirstCard = gladosClone.cardsInsideHand.getElement(0);
     unsigned int gladosSecondCard = gladosClone.cardsInsideHand.getElement(1);
 
@@ -199,15 +200,15 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
     GameDeck actualDeckClone(1);
     GameDeck knownDeckClone(1);
 
-    actualDeckClone.equalizeDeck(actualDeckOriginal);
+    actualDeckClone.copyDeck(actualDeckOriginal);
 
     //test for glados
     for(int i=0; i<repetition; i++)
     {
         gladosClone.clearHand();
         dealerClone.clearHand();
-        actualDeckClone.equalizeDeck(actualDeckOriginal);
-        knownDeckClone.equalizeDeck(actualDeckClone);
+        actualDeckClone.copyDeck(actualDeckOriginal);
+        knownDeckClone.copyDeck(actualDeckClone);
 
        gladosClone.drawSpecificCard(gladosFirstCard,actualDeckClone,knownDeckClone);
        gladosClone.drawSpecificCard(gladosSecondCard,actualDeckClone,knownDeckClone);
@@ -270,7 +271,7 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
         copycatClone.clearHand();
         dealerClone.clearHand();
 
-        actualDeckClone.equalizeDeck(actualDeckOriginal);
+        actualDeckClone.copyDeck(actualDeckOriginal);
 
        copycatClone.drawSpecificCard(gladosFirstCard,actualDeckClone);
        copycatClone.drawSpecificCard(gladosSecondCard,actualDeckClone);
@@ -313,7 +314,7 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
 
 }
 
-void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWin)
+void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWin,unsigned int scenarioRepetition)
 {
     while(glados.simulationScore<simulationToWin && dealer.simulationScore<simulationToWin)
     {
@@ -330,11 +331,11 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
         }
 
 
-        ghostDeck.equalizeDeck(actualDeck);
+        ghostDeck.copyDeck(actualDeck);
 
         try
         {
-            glados.drawCardBasedOnExpectedValue(actualDeck,knownDeck,dealer.getPlayerOpenCardValue());
+            glados.drawCardBasedOnExpectedValue(actualDeck,knownDeck,dealer.getPlayerOpenCard());
         }
         catch(TreeGenerationError &err)
         {
@@ -379,7 +380,7 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
 
         if(glados.cardsInsideHand.getNumberOfCards()!=copycat.cardsInsideHand.getNumberOfCards())
         {
-            updateComplexCopycatIndex(copycatRepetition,actualDeckCopy,glados,dealer,copycat);
+            updateComplexCopycatIndex(scenarioRepetition,actualDeckCopy,glados,dealer,copycat);
         }
 
 

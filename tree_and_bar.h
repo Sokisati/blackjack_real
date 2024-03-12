@@ -14,7 +14,6 @@ struct TreeGenerationError : public std::exception
     const char* what();
 };
 
-
 struct TreeNode
 {
     PlayerDeck cardsInside;
