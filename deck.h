@@ -50,8 +50,6 @@ public:
     void removeCardsForTreeOperation(PlayerDeck nodeCards);
     card_t getRandomCard();
     GameDeck(unsigned int deckMultiplier);
-    std::vector<GameDeck> getTaskDeckVector(unsigned int numberOfThreads);
-
     std::vector<PlayerDeck> createCombinationHands(std::vector<std::vector<unsigned int>> combinationVector);
 };
 

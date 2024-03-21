@@ -193,6 +193,7 @@ GameDeck::GameDeck(unsigned int deckMultiplier)
     rng.seed(std::random_device()());
     createLargeDeck();
 }
+
 card_t GameDeck::getRandomCard()
 {
     std::uniform_int_distribution<unsigned int> distribution(0, cards.size() - 1);
@@ -204,11 +205,8 @@ void GameDeck::createDebugDeck()
     cards.clear();
     addCard(2);
     addCard(5);
-    addCard(6);
-    addCard(7);
-    addCard(8);
+    addCard(5);
     addCard(10);
-    addCard(11);
 
 }
 
@@ -259,64 +257,3 @@ void GameDeck::removeCardsForTreeOperation(PlayerDeck nodeCards)
         removeCard(cardToRemove);
     }
 }
-/*
-std::vector<GameDeck> GameDeck::getTaskDeckVector(unsigned int numberOfThreads)
-{
-    std::vector<GameDeck> briefTaskDeckVector;
-    std::vector<GameDeck> taskDeckVector;
-    GameDeck taskDeckTemp(1);
-
-    std::vector<unsigned int> differentCards;
-    differentCards.push_back(cards[0]);
-
-    for(int element=1; element<cards.size(); element++)
-    {
-       if(cards[element]!=differentCards.back())
-       {
-           differentCards.push_back(cards[element]);
-       }
-    }
-
-    if(differentCards.size()<numberOfThreads)
-    {
-        throw NotThreadApplicable();
-    }
-
-    unsigned int taskLoad = differentCards.size()/numberOfThreads;
-    unsigned int taskIndex = 0;
-
-    //keep in mind: size of differentCards vector may not be equally dividable by number of threads
-    //for this, last thread gets the remaining labour (it can be more or less)
-    for(unsigned int threadNo=0; threadNo<numberOfThreads-1; threadNo++)
-    {
-        taskDeckTemp.clearDeck();
-        for(unsigned int index = taskIndex; index<taskLoad; index++)
-        {
-            taskDeckTemp.addCard(differentCards[taskIndex]);
-            taskIndex++;
-        }
-        briefTaskDeckVector.push_back(taskDeckTemp);
-    }
-
-    taskDeckTemp.clearDeck();
-
-    //last thread gets the job done
-    for(unsigned int element=taskIndex; element<differentCards.size(); element++)
-    {
-        taskDeckTemp.addCard(differentCards[element]);
-    }
-
-    briefTaskDeckVector.push_back(taskDeckTemp);
-
-    //now, threads should know what their real job is
-    for(unsigned int threads=0; threads<numberOfThreads-1; threads++)
-    {
-        taskDeckTemp.clearDeck();
-        for(unsigned int element=0; element<taskLoad; element++)
-        {
-            taskDeckTemp.addCard(briefTaskDeckVector)
-        }
-    }
-
-
-}*/

@@ -129,13 +129,20 @@ void Table::endRound(unsigned int roundToWin)
     std::cout<<"cc index: "<<copycatIndex<<"\n";
     resultTxt<<"cc index: "<<copycatIndex<<"\n";
 
-    if(glados.getPlayerGameValue()>dealer.getPlayerGameValue())
-    {
-        glados.addRoundScore();
-    }
-    else if(glados.getPlayerGameValue()<dealer.getPlayerGameValue())
+    if(glados.getPlayerGameValue()==0)
     {
         dealer.addRoundScore();
+    }
+    else
+    {
+        if(glados.getPlayerGameValue()>dealer.getPlayerGameValue())
+        {
+            glados.addRoundScore();
+        }
+        else if(glados.getPlayerGameValue()<dealer.getPlayerGameValue())
+        {
+            dealer.addRoundScore();
+        }
     }
 
     glados.clearHand();
@@ -165,6 +172,7 @@ void Table::endRound(unsigned int roundToWin)
 void Table::startRound()
 {
     actualDeck.printCards();
+    actualDeck.writeCards(resultTxt);
     actualDeckCopy.copyDeck(actualDeck);
     glados.clearHand();
     dealer.clearHand();
@@ -182,27 +190,17 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
     unsigned int gladosSecondCard = gladosClone.cardsInsideHand.getElement(1);
 
     std::cout<<"inside"<<"\n";
-
-    bool drawNot = false;
     bool drawMany = false;
 
-    if(gladosClone.cardsInsideHand.getNumberOfCards()==2)
-    {
-        drawNot=true;
-    }
-    else
+    if(gladosClone.cardsInsideHand.getNumberOfCards()>2)
     {
         drawMany=true;
     }
-
     int result = 0;
-
     GameDeck actualDeckClone(1);
     GameDeck knownDeckClone(1);
-
     actualDeckClone.copyDeck(actualDeckOriginal);
-
-    //test for glados
+    //for glados
     for(int i=0; i<repetition; i++)
     {
         gladosClone.clearHand();
@@ -251,21 +249,28 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
            continue;
        }
 
-        if(gladosClone.getPlayerGameValue()>dealerClone.getPlayerGameValue())
-        {
-            result++;
-        }
-        else if(gladosClone.getPlayerGameValue()<dealerClone.getPlayerGameValue())
-        {
-            result--;
-        }
-
+       if(gladosClone.getPlayerGameValue()==0)
+       {
+           result--;
+       }
+       else
+       {
+           if(gladosClone.getPlayerGameValue()>dealerClone.getPlayerGameValue())
+           {
+               result++;
+           }
+           else if(gladosClone.getPlayerGameValue()<dealerClone.getPlayerGameValue())
+           {
+               result--;
+           }
+       }
         gladosClone.printSubjectCards();
         dealerClone.printSubjectCards();
         std::cout<<"result: "<<result<<"\n";
 
     }
 
+    //for copycat
     for(int i=0; i<repetition; i++)
     {
         copycatClone.clearHand();
@@ -289,15 +294,22 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
            i--;
            continue;
        }
-        if(copycatClone.getPlayerGameValue()>dealerClone.getPlayerGameValue())
-        {
-            result--;
-        }
-        else if(copycatClone.getPlayerGameValue()<dealerClone.getPlayerGameValue())
-        {
-            result++;
-        }
 
+       if(copycatClone.getPlayerGameValue()==0)
+       {
+           result++;
+       }
+       else
+       {
+           if(copycatClone.getPlayerGameValue()>dealerClone.getPlayerGameValue())
+           {
+               result--;
+           }
+           else if(copycatClone.getPlayerGameValue()<dealerClone.getPlayerGameValue())
+           {
+               result++;
+           }
+       }
         copycatClone.printSubjectCards();
         dealerClone.printSubjectCards();
         std::cout<<"result: "<<result<<"\n";
@@ -330,9 +342,7 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
             continue;
         }
 
-
         ghostDeck.copyDeck(actualDeck);
-
         try
         {
             glados.drawCardBasedOnExpectedValue(actualDeck,knownDeck,dealer.getPlayerOpenCard());

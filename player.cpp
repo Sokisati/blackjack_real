@@ -3,7 +3,6 @@
 //
 #include "player.h"
 #include "map"
-#include "iostream"
 
 void Player::drawImaginaryCard(card_t cardToDraw)
 {
@@ -193,12 +192,14 @@ unsigned int Glados::getImaginaryHandValueCombinationHand(PlayerDeck playerDeckT
     return imaginaryHandValue;
 }
 
-double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCard)
+double Glados::getExpectedValue(GameDeck originalDeck, card_t openCard)
 {
+
     if(getPlayerGameValue()==0)
     {
         return -1;
     }
+
     card_t imaginaryCard;
     double expectedValue = 0;
     ProbBar probBar;
@@ -211,7 +212,6 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCard)
     initialWinProb = probBar.getWinProb(getPlayerGameValue());
 
     std::cout<<"iwp "<<initialWinProb<<"\n";
-
 
     unsigned int imaginaryHandValue;
     probBar.clearBar();
@@ -227,6 +227,7 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCard)
 
         if(i!=0)
         {
+
             caseScenario = expectedValueCaseDetector(expectedValue,initialWinProb,i,originalDeck.getNumberOfCards());
             if(caseScenario!=0)
             {
@@ -239,10 +240,18 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCard)
                 continue;
             }
         }
+
         imaginaryDeck.removeCard(imaginaryCard);
         imaginaryHandValue = getImaginaryHandValue(imaginaryCard);
-        probBar = treeFunction(imaginaryDeck,openCard);
-        imaginaryWinProb = probBar.getWinProb(imaginaryHandValue);
+        if(imaginaryHandValue==0)
+        {
+            imaginaryWinProb = 0;
+        }
+        else
+        {
+            probBar = treeFunction(imaginaryDeck,openCard);
+            imaginaryWinProb = probBar.getWinProb(imaginaryHandValue);
+        }
         expectedValue += (imaginaryWinProb-initialWinProb);
         imaginaryDeck.copyDeck(originalDeck);
         probBar.clearBar();
@@ -254,9 +263,10 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCard)
     //if it's zero, it can mean either drawing one card won't increase our probability of winning,
     //or it can decrease or increase
     //one way to find out:
-
-    if(expectedValue<0.1 && getPlayerGameValue()<=10)
+/*
+    if(expectedValue<0 && getPlayerGameValue()<=10)
     {
+        std::cout<<"double combinations: "<<"\n";
         if(originalDeck.getNumberOfCards()<6)
         {
             throw OutOfCards();
@@ -290,7 +300,7 @@ double Glados::getExpectedValue(GameDeck originalDeck, unsigned int openCard)
             probBar.clearBar();
         }
     }
-
+*/
     std::cout<<"e: "<<expectedValue<<"\n";
     return expectedValue;
 
