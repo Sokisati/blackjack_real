@@ -227,7 +227,6 @@ double Glados::getExpectedValue(GameDeck originalDeck, card_t openCard)
 
         if(i!=0)
         {
-
             caseScenario = expectedValueCaseDetector(expectedValue,initialWinProb,i,originalDeck.getNumberOfCards());
             if(caseScenario!=0)
             {
@@ -259,14 +258,15 @@ double Glados::getExpectedValue(GameDeck originalDeck, card_t openCard)
         duplicateMap[imaginaryCard]=(imaginaryWinProb-initialWinProb);
     }
 
-
-    //if it's zero, it can mean either drawing one card won't increase our probability of winning,
+    //if it's *nearly* zero, it can mean either drawing one card won't increase our probability of winning,
     //or it can decrease or increase
     //one way to find out:
-/*
-    if(expectedValue<0 && getPlayerGameValue()<=10)
+
+    if(expectedValue<0 && getPlayerGameValue()<=6)
     {
         std::cout<<"double combinations: "<<"\n";
+        probBar = treeFunction(originalDeck,openCard);
+        initialWinProb = probBar.getWinProb(getPlayerGameValue());
         if(originalDeck.getNumberOfCards()<6)
         {
             throw OutOfCards();
@@ -290,17 +290,19 @@ double Glados::getExpectedValue(GameDeck originalDeck, card_t openCard)
             }
             imaginaryDeck.copyDeck(originalDeck);
             imaginaryHandValue = getImaginaryHandValueCombinationHand(possibleHands[i]);
-            for(int k=0; k<selection; k++)
+            if(imaginaryHandValue==0)
             {
-                imaginaryDeck.removeCard(possibleHands[i].getElement(k));
+                imaginaryWinProb=0;
             }
-            probBar = treeFunction(imaginaryDeck,openCard);
-            imaginaryWinProb = probBar.getWinProb(imaginaryHandValue);
+            else
+            {
+                imaginaryWinProb = probBar.getWinProb(imaginaryHandValue);
+            }
             expectedValue += (imaginaryWinProb-initialWinProb);
-            probBar.clearBar();
         }
     }
-*/
+
+
     std::cout<<"e: "<<expectedValue<<"\n";
     return expectedValue;
 
