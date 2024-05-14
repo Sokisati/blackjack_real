@@ -2,7 +2,7 @@
 
 int main()
 {
-    Table table(1);
+    Table table(1,6);
     table.startSimulation(6,5,30);
 
  return 0;

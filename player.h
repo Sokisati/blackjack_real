@@ -25,11 +25,10 @@ class Glados:public Player
 {
 public:
     ProbBar treeFunction(GameDeck originalDeck, unsigned int openCardValue);
-    double getExpectedValue(GameDeck originalDeck, unsigned int openCard);
+    double getExpectedValue(GameDeck originalDeck, card_t openCard);
     unsigned int getImaginaryHandValue(card_t imaginaryCardToDraw);
     void drawSpecificCard(card_t cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck);
     void drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck);
-    void drawCardBasedOnExpectedValue(GameDeck &actualDeck, GameDeck &knownDeck, const unsigned int &dealerOpenCardValue);
     double expectedValueCaseDetector(double expectedValue,double initialWinProb,const unsigned int &iteration,const unsigned int &deckSize);
     unsigned int getImaginaryHandValueCombinationHand(PlayerDeck playerDeckToAdd);
 };

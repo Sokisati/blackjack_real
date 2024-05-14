@@ -6,83 +6,13 @@
 #include "player.h"
 #include "iostream"
 
-Table::Table(unsigned int deckMultiplier) : actualDeck(deckMultiplier), knownDeck(deckMultiplier), ghostDeck(deckMultiplier),
+Table::Table(unsigned int deckMultiplier,unsigned int deckDepletedAssumption) : actualDeck(deckMultiplier), knownDeck(deckMultiplier), ghostDeck(deckMultiplier),
                                             actualDeckCopy(deckMultiplier)
 {
+    this->deckDepletedAssumption = deckDepletedAssumption;
    resultTxt.open("test_results.txt",std::ios::out);
 }
 
-void Table::startNormalGame()
-{
-    unsigned int firstInitialCard;
-    unsigned int secondInitialCard;
-    unsigned int dealerOpenCard;
-    unsigned int gladosExtraCard;
-    unsigned int dealerSecretCard;
-    unsigned int copycatExtraCard;
-    double expectedValue;
-
-    GameDeck actualDeck(1);
-    GameDeck knownDeck(1);
-
-    actualDeck.createLargeDeck();
-    knownDeck.createLargeDeck();
-
-
-    while(true)
-    {
-        //deal the cards
-        std::cout<<"What are my cards?"<<"\n";
-        std::cin>>firstInitialCard;
-        std::cin>>secondInitialCard;
-        //exit condition
-        if(firstInitialCard==999||secondInitialCard==999)
-        {
-            break;
-        }
-        glados.drawSpecificCard(firstInitialCard,actualDeck,knownDeck);
-        glados.drawSpecificCard(secondInitialCard,actualDeck,knownDeck);
-        std::cout<<"And what's the dealers open card?"<<"\n";
-        std::cin>>dealerOpenCard;
-        dealer.drawSpecificCard(dealerOpenCard,actualDeck);
-        knownDeck.removeCard(dealer.getPlayerOpenCard());
-        expectedValue = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
-        glados.drawCardBasedOnExpectedValue(actualDeck,knownDeck,dealerOpenCard);
-        std::cout<<"I don't want any/more cards"<<"\n";
-        while(true)
-        {
-            std::cout<<"Reveal card of dealer"<<"\n";
-            std::cin>>dealerSecretCard;
-            dealer.drawSpecificCard(dealerSecretCard,actualDeck);
-            if(dealer.getPlayerGameValue()>=17 || dealer.getPlayerGameValue()==0)
-            {
-                break;
-            }
-        }
-        if(glados.getPlayerGameValue()>dealer.getPlayerGameValue())
-        {
-            std::cout<<"I won, as expected."<<"\n";
-            glados.addRoundScore();
-        }
-        else if(glados.getPlayerGameValue()<dealer.getPlayerGameValue())
-        {
-            std::cout<<"You must have cheated or smth."<<"\n";
-            dealer.addRoundScore();
-        }
-        else
-        {
-            std::cout<<"It's a draw. I hate draws."<<"\n";
-        }
-        glados.clearHand();
-        dealer.clearHand();
-        knownDeck.copyDeck(actualDeck);
-        knownDeck.printCards();
-        actualDeck.printCards();
-    }
-
-    std::cout<<"glados: "<<glados.roundScore<<" "<<" dealer:"<<dealer.roundScore<<"\n";
-
-}
 
 void Table::printHands()
 {
@@ -108,6 +38,7 @@ void Table::dealCards()
     glados.drawRandomCard(actualDeck,knownDeck);
     dealer.drawRandomCard(actualDeck);
     dealer.drawRandomCard(actualDeck);
+
     copycat.cardsInsideHand.copyDeck(glados.cardsInsideHand);
 
     knownDeck.removeCard(dealer.getPlayerOpenCard());
@@ -171,6 +102,12 @@ void Table::endRound(unsigned int roundToWin)
 
 void Table::startRound()
 {
+    if(actualDeck.getNumberOfCards()<deckDepletedAssumption)
+    {
+        actualDeck.resetDeck();
+        knownDeck.resetDeck();
+    }
+
     actualDeck.printCards();
     actualDeck.writeCards(resultTxt);
     actualDeckCopy.copyDeck(actualDeck);
@@ -178,16 +115,18 @@ void Table::startRound()
     dealer.clearHand();
     copycat.clearHand();
     knownDeck.copyDeck(actualDeck);
+
     dealCards();
 }
 
+/*
 void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& actualDeckOriginal, Glados gladosClone, Dealer dealerClone, DealerCopycat copycatClone)
 {
     //this is definitely the worst method in this program, don't think too much about it
 
-    unsigned int dealerFirstCard = dealerClone.getPlayerOpenCard();
-    unsigned int gladosFirstCard = gladosClone.cardsInsideHand.getElement(0);
-    unsigned int gladosSecondCard = gladosClone.cardsInsideHand.getElement(1);
+    card_t dealerFirstCard = dealerClone.getPlayerOpenCard();
+    card_t gladosFirstCard = gladosClone.cardsInsideHand.getElement(0);
+    card_t gladosSecondCard = gladosClone.cardsInsideHand.getElement(1);
 
     std::cout<<"inside"<<"\n";
     bool drawMany = false;
@@ -325,74 +264,87 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
     }
 
 }
+*/
+
 
 void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWin,unsigned int scenarioRepetition)
 {
+    double expectedValue;
+
     while(glados.simulationScore<simulationToWin && dealer.simulationScore<simulationToWin)
     {
 
-        try
-        {
-            startRound();
-        }
-        catch(OutOfCards &err)
-        {
-            std::cout<<err.what()<<"\n";
-            actualDeck.resetDeck();
-            continue;
-        }
+        startRound();
 
         ghostDeck.copyDeck(actualDeck);
-        try
+
+        expectedValue = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
+
+        //glados cycle
+        while(expectedValue>0)
         {
-            glados.drawCardBasedOnExpectedValue(actualDeck,knownDeck,dealer.getPlayerOpenCard());
+            if(glados.getPlayerGameValue()==0 ||glados.getPlayerGameValue()>=19 ||actualDeck.getNumberOfCards()<deckDepletedAssumption)
+            {
+                break;
+            }
+
+            glados.drawRandomCard(actualDeck,knownDeck);
+            expectedValue = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
         }
-        catch(TreeGenerationError &err)
+
+        if(actualDeck.getNumberOfCards()<deckDepletedAssumption)
         {
-            std::cout<<err.what()<<"\n";
-            actualDeck.resetDeck();
-            continue;
-        }
-        catch(OutOfCards &err)
-        {
-            std::cout<<err.what()<<"\n";
-            actualDeck.resetDeck();
             continue;
         }
 
-        try
+
+        //copycat cycle
+        while(true)
         {
-            copycat.drawCardLikeDealer(glados,ghostDeck);
+            if(copycat.getPlayerGameValue()==0 || copycat.getPlayerGameValue()>=17 ||ghostDeck.getNumberOfCards()<deckDepletedAssumption)
+            {
+                break;
+            }
+
+            if(copycat.canMirrorCard(glados))
+            {
+                copycat.mirrorCard(glados);
+            }
+            else
+            {
+                copycat.drawRandomCard(ghostDeck);
+            }
         }
-        catch(TreeGenerationError &err)
+
+        if(ghostDeck.getNumberOfCards()<deckDepletedAssumption)
         {
-            std::cout<<err.what()<<"\n";
-            actualDeck.resetDeck();
-            continue;
-        }
-        catch(OutOfCards &err)
-        {
-            std::cout<<err.what()<<"\n";
-            actualDeck.resetDeck();
             continue;
         }
 
-        try
+        //dealer cycle
+        while(true)
         {
-            dealer.drawCardSoft17(actualDeck);
+            if(dealer.getPlayerGameValue()>=17 || dealer.getPlayerGameValue()==0 || actualDeck.getNumberOfCards()<deckDepletedAssumption)
+            {
+                break;
+            }
+            else
+            {
+                dealer.drawRandomCard(actualDeck);
+            }
         }
-        catch(OutOfCards &err)
+
+        if(actualDeck.getNumberOfCards()<deckDepletedAssumption)
         {
-            std::cout<<err.what()<<"\n";
-            actualDeck.resetDeck();
             continue;
         }
 
+        /*
         if(glados.cardsInsideHand.getNumberOfCards()!=copycat.cardsInsideHand.getNumberOfCards())
         {
             updateComplexCopycatIndex(scenarioRepetition,actualDeckCopy,glados,dealer,copycat);
         }
-
+*/
 
         endRound(roundToWin);
 

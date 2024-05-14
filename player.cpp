@@ -324,28 +324,6 @@ void Glados::drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck)
     knownDeck.copyDeck(actualDeck);
 }
 
-void Glados::drawCardBasedOnExpectedValue(GameDeck &actualDeck, GameDeck &knownDeck, const unsigned int &dealerOpenCardValue)
-{
-
-    double expectedValue;
-    unsigned int gameValue;
-    expectedValue = getExpectedValue(knownDeck,dealerOpenCardValue);
-    while(expectedValue>0)
-    {
-        gameValue = getPlayerGameValue();
-        if(gameValue==0)
-        {
-            return;
-        }
-        if(actualDeck.getNumberOfCards()<2)
-        {
-            actualDeck.createLargeDeck();
-            knownDeck.createLargeDeck();
-        }
-        drawRandomCard(actualDeck,knownDeck);
-        expectedValue = getExpectedValue(knownDeck,dealerOpenCardValue);
-    }
-}
 
 void Dealer::drawCardSoft17(GameDeck &actualDeck)
 {
@@ -388,7 +366,7 @@ void DealerCopycat::drawCardLikeDealer(const Glados& glados, GameDeck ghostDeck)
     {
         if(ghostDeck.getNumberOfCards()<1)
         {
-            break;
+           throw std::logic_error("Out of cards!");
         }
         if(getPlayerGameValue()>=17 || getPlayerGameValue()==0)
         {
