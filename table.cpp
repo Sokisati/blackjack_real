@@ -119,7 +119,7 @@ void Table::startRound()
     dealCards();
 }
 
-/*
+
 void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& actualDeckOriginal, Glados gladosClone, Dealer dealerClone, DealerCopycat copycatClone)
 {
     //this is definitely the worst method in this program, don't think too much about it
@@ -131,14 +131,19 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
     std::cout<<"inside"<<"\n";
     bool drawMany = false;
 
+    double expectedValue;
+
     if(gladosClone.cardsInsideHand.getNumberOfCards()>2)
     {
         drawMany=true;
     }
+
     int result = 0;
+
     GameDeck actualDeckClone(1);
     GameDeck knownDeckClone(1);
     actualDeckClone.copyDeck(actualDeckOriginal);
+
     //for glados
     for(int i=0; i<repetition; i++)
     {
@@ -156,37 +161,39 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
        if(drawMany)
        {
            gladosClone.drawRandomCard(actualDeckClone,knownDeckClone);
-           try
+           expectedValue = gladosClone.getExpectedValue(knownDeckClone,dealerClone.getPlayerOpenCard());
+
+           while(expectedValue>0)
            {
-               gladosClone.drawCardBasedOnExpectedValue(actualDeckClone,knownDeckClone,dealerFirstCard);
+               if(gladosClone.getPlayerGameValue()==0 || gladosClone.getPlayerGameValue()>=19 ||actualDeckClone.getNumberOfCards()<deckDepletedAssumption)
+               {
+                   break;
+               }
+               gladosClone.drawRandomCard(actualDeckClone,knownDeckClone);
+               expectedValue = gladosClone.getExpectedValue(knownDeckClone,dealerClone.getPlayerOpenCard());
            }
-           catch(TreeGenerationError &err)
+           if(actualDeckClone.getNumberOfCards()<deckDepletedAssumption)
            {
-               std::cout<<err.what()<<"\n";
-               actualDeck.resetDeck();
-               i--;
-               continue;
-           }
-           catch(OutOfCards &err)
-           {
-               std::cout<<err.what()<<"\n";
-               actualDeck.resetDeck();
-               i--;
-               continue;
+               return;
            }
        }
 
-       try
-       {
-           dealerClone.drawCardSoft17(actualDeckClone);
-       }
-       catch(OutOfCards &err)
-       {
-           std::cout<<err.what()<<"\n";
-           actualDeck.resetDeck();
-           i--;
-           continue;
-       }
+        //dealer cycle
+        while(true)
+        {
+            if(dealerClone.getPlayerGameValue()>=17 || dealerClone.getPlayerGameValue()==0 || actualDeckClone.getNumberOfCards()<deckDepletedAssumption)
+            {
+                break;
+            }
+            else
+            {
+                dealerClone.drawRandomCard(actualDeckClone);
+            }
+        }
+        if(actualDeckClone.getNumberOfCards()<deckDepletedAssumption)
+        {
+            return;
+        }
 
        if(gladosClone.getPlayerGameValue()==0)
        {
@@ -221,18 +228,39 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
        copycatClone.drawSpecificCard(gladosSecondCard,actualDeckClone);
        dealerClone.drawSpecificCard(dealerFirstCard,actualDeckClone);
 
-       try
-       {
-           copycatClone.drawCardSoft17(actualDeckClone);
-           dealerClone.drawCardSoft17(actualDeckClone);
-       }
-       catch(OutOfCards &err)
-       {
-           std::cout<<err.what()<<"\n";
-           actualDeck.resetDeck();
-           i--;
-           continue;
-       }
+       //copycat cycle
+        while(true)
+        {
+            if(copycatClone.getPlayerGameValue()>=17 || copycatClone.getPlayerGameValue()==0 || actualDeckClone.getNumberOfCards()<deckDepletedAssumption)
+            {
+                break;
+            }
+            else
+            {
+                copycatClone.drawRandomCard(actualDeckClone);
+            }
+        }
+        if(actualDeckClone.getNumberOfCards()<deckDepletedAssumption)
+        {
+            return;
+        }
+
+        //dealer cycle
+        while(true)
+        {
+            if(dealerClone.getPlayerGameValue()>=17 || dealerClone.getPlayerGameValue()==0 || actualDeckClone.getNumberOfCards()<deckDepletedAssumption)
+            {
+                break;
+            }
+            else
+            {
+                dealerClone.drawRandomCard(actualDeckClone);
+            }
+        }
+        if(actualDeckClone.getNumberOfCards()<deckDepletedAssumption)
+        {
+            return;
+        }
 
        if(copycatClone.getPlayerGameValue()==0)
        {
@@ -264,7 +292,7 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
     }
 
 }
-*/
+
 
 
 void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWin,unsigned int scenarioRepetition)
@@ -339,12 +367,12 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
             continue;
         }
 
-        /*
+
         if(glados.cardsInsideHand.getNumberOfCards()!=copycat.cardsInsideHand.getNumberOfCards())
         {
             updateComplexCopycatIndex(scenarioRepetition,actualDeckCopy,glados,dealer,copycat);
         }
-*/
+
 
         endRound(roundToWin);
 
