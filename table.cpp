@@ -13,7 +13,6 @@ Table::Table(unsigned int deckMultiplier,unsigned int deckDepletedAssumption) : 
    resultTxt.open("test_results.txt",std::ios::out);
 }
 
-
 void Table::printHands()
 {
     std::cout<<"Glados hand: ";
@@ -118,7 +117,6 @@ void Table::startRound()
 
     dealCards();
 }
-
 
 void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& actualDeckOriginal, Glados gladosClone, Dealer dealerClone, DealerCopycat copycatClone)
 {
@@ -292,8 +290,6 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
     }
 
 }
-
-
 
 void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWin,unsigned int scenarioRepetition)
 {

@@ -23,10 +23,7 @@ public:
     GameDeck actualDeckCopy;
     int copycatIndex = 0;
     unsigned int deckDepletedAssumption;
-
-
-
-
+    
     Table(unsigned int deckMultiplier,unsigned int deckDepletedAssumption);
     void startNormalGame();
     void startSimulation(unsigned int roundToWin, unsigned int simulationToWin, unsigned int scenarioRepetition);

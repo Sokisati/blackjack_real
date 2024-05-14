@@ -2,7 +2,6 @@
 // Created by yagiz on 2/22/2024.
 //
 #include "tree_and_bar.h"
-#include "iostream"
 
 const char *TreeGenerationError::what()
 {
@@ -17,10 +16,9 @@ ProbBar::ProbBar()
     }
 }
 
-void ProbBar::addProb(double prob,unsigned int deckValue)
+void ProbBar::addProb(double prob,handvalue_t handValue)
 {
-
-    switch (deckValue)
+    switch (handValue)
     {
         case 0:
             probArray[0] += prob;

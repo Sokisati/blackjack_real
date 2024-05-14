@@ -19,7 +19,7 @@ card_t Dealer::getPlayerOpenCard()
     return cardsInsideHand.getOpenCard();
 }
 
-unsigned int Player::getPlayerGameValue()
+handvalue_t Player::getPlayerGameValue()
 {
     return cardsInsideHand.getGameValue();
 }
@@ -29,7 +29,7 @@ void Player::clearHand()
     cardsInsideHand.clearDeck();
 }
 
-void Player::drawSpecificCard(unsigned int cardToDraw, GameDeck &actualDeck)
+void Player::drawSpecificCard(card_t cardToDraw, GameDeck &actualDeck)
 {
     if(actualDeck.getNumberOfCards()==0)
     {
@@ -149,7 +149,7 @@ ProbBar Glados::treeFunction(GameDeck originalDeck, card_t openCard)
     return probBar;
 }
 
-unsigned int Glados::getImaginaryHandValue(card_t imaginaryCardToDraw)
+handvalue_t Glados::getImaginaryHandValue(card_t imaginaryCardToDraw)
 {
     cardsInsideHand.addCard(imaginaryCardToDraw);
     unsigned int imaginaryHandValue = getPlayerGameValue();
@@ -178,7 +178,7 @@ double Glados::expectedValueCaseDetector(double expectedValue,double initialWinP
     }
 }
 
-unsigned int Glados::getImaginaryHandValueCombinationHand(PlayerDeck playerDeckToAdd)
+handvalue_t Glados::getImaginaryHandValueCombinationHand(PlayerDeck playerDeckToAdd)
 {
     for(unsigned int card: playerDeckToAdd.cards)
     {

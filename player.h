@@ -7,30 +7,32 @@
 #include "deck.h"
 #include "tree_and_bar.h"
 
+typedef unsigned int handvalue_t;
+
 class Player{
 public:
     unsigned int roundScore = 0;
     unsigned int simulationScore = 0;
     PlayerDeck cardsInsideHand;
     void printSubjectCards();
-    unsigned int getPlayerGameValue();
+    handvalue_t getPlayerGameValue();
     void clearHand();
-    void drawSpecificCard(unsigned int cardToDraw,GameDeck &actualDeck);
+    void drawSpecificCard(card_t cardToDraw,GameDeck &actualDeck);
     void addRoundScore();
-    void drawImaginaryCard(unsigned int cardToDraw);
+    void drawImaginaryCard(card_t cardToDraw);
     void drawRandomCard(GameDeck &actualDeck);
 };
 
 class Glados:public Player
 {
 public:
-    ProbBar treeFunction(GameDeck originalDeck, unsigned int openCardValue);
+    ProbBar treeFunction(GameDeck originalDeck,card_t openCardValue);
     double getExpectedValue(GameDeck originalDeck, card_t openCard);
-    unsigned int getImaginaryHandValue(card_t imaginaryCardToDraw);
+    handvalue_t getImaginaryHandValue(card_t imaginaryCardToDraw);
     void drawSpecificCard(card_t cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck);
     void drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck);
     double expectedValueCaseDetector(double expectedValue,double initialWinProb,const unsigned int &iteration,const unsigned int &deckSize);
-    unsigned int getImaginaryHandValueCombinationHand(PlayerDeck playerDeckToAdd);
+    handvalue_t getImaginaryHandValueCombinationHand(PlayerDeck playerDeckToAdd);
 };
 
 class Dealer: public Player

@@ -6,8 +6,9 @@
 #define BLACKJACK_REAL_TREE_AND_BAR_H
 
 #include "deck.h"
-
 #include <exception>
+
+typedef unsigned int handvalue_t;
 
 struct TreeGenerationError : public std::exception
 {
@@ -28,10 +29,10 @@ struct ProbBar
     double probArray[6];
 
     ProbBar();
-    void addProb(double prob,unsigned int deckValue);
+    void addProb(double prob,handvalue_t handValue);
     void printBar();
     void clearBar();
-    double getWinProb(unsigned int handValue);
+    double getWinProb(handvalue_t handValue);
 
 };
 #endif //BLACKJACK_REAL_TREE_AND_BAR_H
