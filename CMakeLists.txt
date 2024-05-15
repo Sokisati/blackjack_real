@@ -3,4 +3,7 @@ project(blackjack_real)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(blackjack_real main.cpp player.h player.cpp table.cpp table.h deck.cpp deck.h tree_and_bar.cpp tree_and_bar.h)
+file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
+
+# Add the executable
+add_executable(blackjack_real ${SOURCES})
