@@ -2,7 +2,7 @@
 // Created by yagiz on 2/22/2024.
 //
 #include "deck.h"
-
+typedef unsigned int handvalue_t;
 const char*  NotThreadApplicable::what()
 {
     return "Too few cards for multithreading";
@@ -108,7 +108,7 @@ void Deck::generateCombinations(unsigned int selectionSize, unsigned int startIn
 }
 
 
-unsigned int PlayerDeck::getTotalValue()
+handvalue_t PlayerDeck::getTotalValue()
 {
     unsigned int sum = 0;
     for(card_t card : cards)
@@ -131,16 +131,16 @@ unsigned int PlayerDeck::getNumberOfAces()
     return numberOfAces;
 }
 
-unsigned int PlayerDeck::getGameValue()
+handvalue_t PlayerDeck::getGameValue()
 {
-    unsigned int totalValue = getTotalValue();
+    handvalue_t totalValue = getTotalValue();
     unsigned int numberOfAces = getNumberOfAces();
 
     if(totalValue>21)
     {
         for(int i=0; i<numberOfAces; i++)
         {
-            unsigned int potentialGameValue = totalValue-(10*(i+1));
+            handvalue_t potentialGameValue = totalValue-(10*(i+1));
             if(potentialGameValue<=21)
             {
                 return potentialGameValue;

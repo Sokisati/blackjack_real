@@ -139,7 +139,7 @@ ProbBar Glados::treeFunction(GameDeck originalDeck, card_t openCard)
 
     for(auto & node : nodeVector)
     {
-        unsigned int gameValue = node.cardsInside.getGameValue();
+        handvalue_t gameValue = node.cardsInside.getGameValue();
         if(gameValue==0 || gameValue>=17)
         {
             probBar.addProb(node.selfProbability,gameValue);
@@ -152,7 +152,7 @@ ProbBar Glados::treeFunction(GameDeck originalDeck, card_t openCard)
 handvalue_t Glados::getImaginaryHandValue(card_t imaginaryCardToDraw)
 {
     cardsInsideHand.addCard(imaginaryCardToDraw);
-    unsigned int imaginaryHandValue = getPlayerGameValue();
+    handvalue_t imaginaryHandValue = getPlayerGameValue();
     cardsInsideHand.cards.pop_back();
     return imaginaryHandValue;
 }
@@ -184,7 +184,7 @@ handvalue_t Glados::getImaginaryHandValueCombinationHand(PlayerDeck playerDeckTo
     {
         cardsInsideHand.addCard(card);
     }
-    unsigned int imaginaryHandValue = getPlayerGameValue();
+    handvalue_t imaginaryHandValue = getPlayerGameValue();
     for(int i=0; i<playerDeckToAdd.getNumberOfCards(); i++)
     {
         cardsInsideHand.cards.pop_back();
@@ -213,7 +213,7 @@ double Glados::getExpectedValue(GameDeck originalDeck, card_t openCard)
 
     std::cout<<"iwp "<<initialWinProb<<"\n";
 
-    unsigned int imaginaryHandValue;
+    handvalue_t imaginaryHandValue;
     probBar.clearBar();
     std::vector<unsigned int> duplicateVector;
     std::map<unsigned int, double> duplicateMap;
@@ -327,7 +327,7 @@ void Glados::drawRandomCard(GameDeck &actualDeck, GameDeck &knownDeck)
 
 void Dealer::drawCardSoft17(GameDeck &actualDeck)
 {
-    unsigned int gameValue = getPlayerGameValue();
+    handvalue_t gameValue = getPlayerGameValue();
     while(true)
     {
         if(actualDeck.getNumberOfCards()==0)

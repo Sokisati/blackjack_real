@@ -13,6 +13,7 @@
 
 
 typedef unsigned int card_t;
+typedef unsigned int handvalue_t;
 
 struct Deck
 {
@@ -34,8 +35,8 @@ struct PlayerDeck:public Deck
 {
     unsigned int getNumberOfAces();
     card_t getOpenCard();
-    unsigned int getTotalValue();
-    unsigned int getGameValue();
+    handvalue_t getTotalValue();
+    handvalue_t getGameValue();
 
 };
 
