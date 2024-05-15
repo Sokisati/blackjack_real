@@ -3,4 +3,17 @@ project(blackjack_real)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(blackjack_real main.cpp player.h player.cpp table.cpp table.h deck.cpp deck.h tree_and_bar.cpp tree_and_bar.h)
+# Add all source files in the src folder
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+
+# Add all header files in the src folder
+file(GLOB_RECURSE HEADERS "src/*.h")
+
+# Add the main.cpp file separately
+set(MAIN_SRC "src/main.cpp")
+
+# Exclude main.cpp from the list of sources
+list(REMOVE_ITEM SOURCES "${MAIN_SRC}")
+
+# Add the executable
+add_executable(blackjack_real ${SOURCES} ${HEADERS} ${MAIN_SRC})
