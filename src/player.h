@@ -25,7 +25,10 @@ public:
 
 class Glados:public Player
 {
+    bool approximation;
 public:
+    Glados(bool approximationMethod);
+    void changeCalculationApproach();
     ProbBar treeFunction(GameDeck originalDeck,card_t openCardValue);
     double getExpectedValue(GameDeck originalDeck, card_t openCard);
     handvalue_t getImaginaryHandValue(card_t imaginaryCardToDraw);

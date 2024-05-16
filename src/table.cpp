@@ -6,11 +6,25 @@
 #include "player.h"
 #include "iostream"
 
-Table::Table(unsigned int deckMultiplier,unsigned int deckDepletedAssumption) : actualDeck(deckMultiplier), knownDeck(deckMultiplier), ghostDeck(deckMultiplier),
-                                            actualDeckCopy(deckMultiplier)
+Table::Table(unsigned int deckMultiplier,unsigned int deckDepletedAssumption, bool approximationForGlados) : actualDeck(deckMultiplier), knownDeck(deckMultiplier), ghostDeck(deckMultiplier),
+                                            actualDeckCopy(deckMultiplier), glados(approximationForGlados)
 {
     this->deckDepletedAssumption = deckDepletedAssumption;
    resultTxt.open("test_results.txt",std::ios::out);
+}
+
+void Table::testEnv()
+{
+
+    glados.drawImaginaryCard(10);
+    glados.drawImaginaryCard(5);
+
+    dealer.drawImaginaryCard(8);
+
+    std::cout<<"appr: "<<glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard())<<"\n";
+    glados.changeCalculationApproach();
+    std::cout<<"definit: "<<glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
+
 }
 
 void Table::printHands()
@@ -294,6 +308,7 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
 void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWin,unsigned int scenarioRepetition)
 {
     double expectedValue;
+    double expectedValue2;
 
     while(glados.simulationScore<simulationToWin && dealer.simulationScore<simulationToWin)
     {
@@ -303,6 +318,14 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
         ghostDeck.copyDeck(actualDeck);
 
         expectedValue = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
+        glados.changeCalculationApproach();
+        expectedValue2 = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
+        glados.changeCalculationApproach();
+
+        if((expectedValue>0 && expectedValue2<0)||(expectedValue<0 && expectedValue2>0))
+        {
+            conflictCounter++;
+        }
 
         //glados cycle
         while(expectedValue>0)
@@ -314,6 +337,14 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
 
             glados.drawRandomCard(actualDeck,knownDeck);
             expectedValue = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
+            glados.changeCalculationApproach();
+            expectedValue2 = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
+            glados.changeCalculationApproach();
+
+            if((expectedValue>0 && expectedValue2<0)||(expectedValue<0 && expectedValue2>0))
+            {
+                conflictCounter++;
+            }
         }
 
         if(actualDeck.getNumberOfCards()<deckDepletedAssumption)
@@ -377,6 +408,7 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
     }
     std::cout<<"glados: "<<glados.simulationScore<<" "<<" dealer:"<<dealer.simulationScore<<"\n";
     resultTxt<<"glados: "<<glados.simulationScore<<" "<<" dealer:"<<dealer.simulationScore<<"\n";
+    std::cout<<"conflict: "<<conflictCounter<<"\n";
 
     resultTxt.close();
 }

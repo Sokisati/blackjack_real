@@ -57,6 +57,10 @@ void Player::drawRandomCard(GameDeck &actualDeck)
 
 }
 
+Glados::Glados(bool approximationMethod)
+{
+    this->approximation = approximation;
+}
 
 void Glados::drawSpecificCard(card_t cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck)
 {
@@ -192,6 +196,11 @@ handvalue_t Glados::getImaginaryHandValueCombinationHand(PlayerDeck playerDeckTo
     return imaginaryHandValue;
 }
 
+void Glados::changeCalculationApproach()
+{
+    approximation = !approximation;
+}
+
 double Glados::getExpectedValue(GameDeck originalDeck, card_t openCard)
 {
 
@@ -207,6 +216,7 @@ double Glados::getExpectedValue(GameDeck originalDeck, card_t openCard)
     imaginaryDeck.copyDeck(originalDeck);
     double initialWinProb;
     double imaginaryWinProb;
+
     probBar = treeFunction(originalDeck,openCard);
 
     initialWinProb = probBar.getWinProb(getPlayerGameValue());
@@ -214,7 +224,12 @@ double Glados::getExpectedValue(GameDeck originalDeck, card_t openCard)
     std::cout<<"iwp "<<initialWinProb<<"\n";
 
     handvalue_t imaginaryHandValue;
-    probBar.clearBar();
+
+    if(!approximation)
+    {
+        probBar.clearBar();
+    }
+
     std::vector<unsigned int> duplicateVector;
     std::map<unsigned int, double> duplicateMap;
 
@@ -240,7 +255,11 @@ double Glados::getExpectedValue(GameDeck originalDeck, card_t openCard)
             }
         }
 
-        imaginaryDeck.removeCard(imaginaryCard);
+        if(!approximation)
+        {
+            imaginaryDeck.removeCard(imaginaryCard);
+        }
+
         imaginaryHandValue = getImaginaryHandValue(imaginaryCard);
         if(imaginaryHandValue==0)
         {
@@ -248,12 +267,21 @@ double Glados::getExpectedValue(GameDeck originalDeck, card_t openCard)
         }
         else
         {
-            probBar = treeFunction(imaginaryDeck,openCard);
+            if(!approximation)
+            {
+                probBar = treeFunction(imaginaryDeck,openCard);
+            }
+
             imaginaryWinProb = probBar.getWinProb(imaginaryHandValue);
         }
         expectedValue += (imaginaryWinProb-initialWinProb);
         imaginaryDeck.copyDeck(originalDeck);
-        probBar.clearBar();
+
+        if(!approximation)
+        {
+            probBar.clearBar();
+        }
+
         duplicateVector.push_back(imaginaryCard);
         duplicateMap[imaginaryCard]=(imaginaryWinProb-initialWinProb);
     }

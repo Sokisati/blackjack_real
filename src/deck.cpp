@@ -204,9 +204,11 @@ void GameDeck::createDebugDeck()
 {
     cards.clear();
     addCard(2);
+    addCard(3);
     addCard(5);
     addCard(5);
     addCard(10);
+
 
 }
 
