@@ -136,6 +136,7 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
 {
     //this is definitely the worst method in this program, don't think too much about it
 
+    disagreementCounter++;
     card_t dealerFirstCard = dealerClone.getPlayerOpenCard();
     card_t gladosFirstCard = gladosClone.cardsInsideHand.getElement(0);
     card_t gladosSecondCard = gladosClone.cardsInsideHand.getElement(1);
@@ -305,7 +306,21 @@ void Table::updateComplexCopycatIndex(unsigned int repetition, const GameDeck& a
 
 }
 
-void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWin,unsigned int scenarioRepetition)
+float Table::getCopycatPercentage()
+{
+    float ans = float((copycatIndex+disagreementCounter))/(2*disagreementCounter);
+    return ans;
+}
+
+
+float Table::getConflictPercentage()
+{
+    float ans = float(conflictCounter)/expectedValueCalculation;
+    return ans;
+}
+
+
+void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWin,unsigned int scenarioRepetition,bool calculateForApprxConflict)
 {
     double expectedValue;
     double expectedValue2;
@@ -317,15 +332,22 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
 
         ghostDeck.copyDeck(actualDeck);
 
-        expectedValue = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
-        glados.changeCalculationApproach();
-        expectedValue2 = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
-        glados.changeCalculationApproach();
 
-        if((expectedValue>0 && expectedValue2<0)||(expectedValue<0 && expectedValue2>0))
+        expectedValue = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
+
+        if(calculateForApprxConflict)
         {
-            conflictCounter++;
+            expectedValueCalculation++;
+            glados.changeCalculationApproach();
+            expectedValue2 = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
+            glados.changeCalculationApproach();
+
+            if((expectedValue>0 && expectedValue2<0)||(expectedValue<0 && expectedValue2>0))
+            {
+                conflictCounter++;
+            }
         }
+
 
         //glados cycle
         while(expectedValue>0)
@@ -337,13 +359,18 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
 
             glados.drawRandomCard(actualDeck,knownDeck);
             expectedValue = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
-            glados.changeCalculationApproach();
-            expectedValue2 = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
-            glados.changeCalculationApproach();
 
-            if((expectedValue>0 && expectedValue2<0)||(expectedValue<0 && expectedValue2>0))
+            if(calculateForApprxConflict)
             {
-                conflictCounter++;
+                expectedValueCalculation++;
+                glados.changeCalculationApproach();
+                expectedValue2 = glados.getExpectedValue(knownDeck,dealer.getPlayerOpenCard());
+                glados.changeCalculationApproach();
+
+                if((expectedValue>0 && expectedValue2<0)||(expectedValue<0 && expectedValue2>0))
+                {
+                    conflictCounter++;
+                }
             }
         }
 
@@ -408,7 +435,18 @@ void Table::startSimulation(unsigned int roundToWin, unsigned int simulationToWi
     }
     std::cout<<"glados: "<<glados.simulationScore<<" "<<" dealer:"<<dealer.simulationScore<<"\n";
     resultTxt<<"glados: "<<glados.simulationScore<<" "<<" dealer:"<<dealer.simulationScore<<"\n";
-    std::cout<<"conflict: "<<conflictCounter<<"\n";
+
+    if(calculateForApprxConflict)
+    {
+        std::cout<<"conflict: "<<conflictCounter<<"\n";
+        std::cout<<"conflict percentage: "<<getConflictPercentage()<<"\n";
+        resultTxt<<"conflict: "<<conflictCounter<<"\n";
+        resultTxt<<"conflict percentage: "<<getConflictPercentage()<<"\n";
+    }
+
+    std::cout<<"copycat percentage: "<<getCopycatPercentage()<<"\n";
+    resultTxt<<"copycat percentage: "<<getCopycatPercentage()<<"\n";
 
     resultTxt.close();
 }
+
