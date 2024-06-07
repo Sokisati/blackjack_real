@@ -14,7 +14,9 @@ The formula we will use is as follows:
 
 Calculation of Winning Probability
 The probability of winning is calculated using a tree generated with the known deck and the dealer's open card. In the tree created with the strategy of hitting below 17 and standing equal to or above, each leaf represents a potential hand the dealer could have. The probability of each node occurring is calculated as the probability of the parent node * ( 1/(the number of siblings it has +1) ).
-![nt2-0](https://github.com/Sokisati/blackjack_real/assets/129625653/c8abaede-837a-4dd2-b4ef-3b3944ed8981)
+
+![nt2-0](https://github.com/Sokisati/blackjack_real/assets/129625653/b2b8d6ea-9c05-47d4-a036-aef2cc36b6ab)
+
 
 For example, in a scenario where the dealer's open card is 10 and the known deck consists of cards 2, 5, and 7, the tree that will be generated would be as described above. The ones indicated in blue represent the probability of the node occurring. It is essential to note that we consider only leaf nodes as potential hands, while other nodes are merely stops on the way to those potential hands.
 Here, the tree's characteristics are invariant due to the nature of the game. For instance, if we know the depth of a node, we can determine the number of cards within it, and vice versa. Additionally, with the creation of each node, the branches diverge in a reverse pyramid manner. By this, I mean that if there are 8 cards in the known deck and we are referring to a node on the 4th level, we know that until we reach that node, the branches will be in the form of 8*7*6*5.
@@ -36,7 +38,7 @@ Positive and negative sign represents the value for expected value in each node.
 
 ![tree567](https://github.com/Sokisati/blackjack_real/assets/129625653/3741f6ae-813d-4022-9940-069b95bae632)
 
-2) In this case, simulating the game is a sensible option. The more games we play in the simulation, the closer we get to the real advantage ratio. For instance, instead of asking experts in fields like thermodynamics, metallurgy, fluid dynamics, geometry, etc., about the probability of getting heads with a biased coin, which would be a huge waste in terms of time and money, we can simply flip the coin hundreds, thousands, or even tens of thousands of times and record the results. The experimental results will be close to the theoretical result, and the closeness is directly proportional to the number of experiments. In fact, we can say that as the limit of the number of experiments approaches infinity, the experimental probability becomes exactly equal to the theoretical probability.
+2) In this case, simulating the game is a sensible option. The more games we play in the simulation, the closer we get to the real advantage ratio.
 We play hundreds of games against Glados and introduce a ghost player into this simulation. The cards drawn by this ghost player are not subtracted from the real deck. It mimics the dealer's strategy (hence I named it "copycat") and if possible, it copies Glados's cards.
 For example:
 Glados is dealt the first 2 cards, which are 10 and 5. The dealer's open card is 6. Glados calculates the expected value and decides not to draw as it turns out negative. However, the copycat, after obtaining the cards 10 and 5, wants to draw as it mimics the dealer's strategy.
@@ -51,5 +53,10 @@ The reason I call it parallel universes is that the games they play until the nu
 The loop works as follows: Firstly, Glados and the dealer (the copycat is currently not taking any action) play with each other for the specified number of repetitions. At the beginning of each "game," Glados is given the first 2 cards in the original game state, and the dealer is given the open card in the original state. (It is important to note that the deck they play with is the same as the original deck.) Whenever Glados wins against the dealer, the variable named "rope" (you will understand why it is named "rope" shortly) is incremented by +1, and whenever Glados loses, it is decremented by -1. After each game within this loop, the deck is reset to its initial state.
 Once the desired number of repetitions is completed, the copycat starts to perform the same actions. However, when the copycat wins against the dealer, the "rope" variable is decremented by -1, and when it loses, it is incremented by +1.
 As seen, similar to a tug-of-war competition, while Glados tries to pull the "rope" variable in the + direction, the copycat tries to pull it in the - direction.
-At the end of the game, if the copycat index is in a significantly positive value, it is very good news for us, as expected. If it is negative in a long-term simulation (which is very rare, and even -1 would not be acceptable), it means there is an error in the program or in the formulas and algorithms.
+
+![316849510-15c6baf7-2c52-48a0-9326-2b72db391cc7](https://github.com/Sokisati/blackjack_real/assets/129625653/4bc7415a-c0e3-481f-af9c-8a4e76d87088)
+
+
+While not expected, it is acceptable for the rope to be less than 0 for a given disagreement situation. At the end of the every tug-of-war, copycat index is only incremented or subracted by 1.
+What is not acceptable is for the copycat index to be less than 0 for a long simulation.
 
