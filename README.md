@@ -19,8 +19,6 @@ The probability of winning is calculated using a tree generated with the known d
 
 
 For example, in a scenario where the dealer's open card is 10 and the known deck consists of cards 2, 5, and 7, the tree that will be generated would be as described above. The ones indicated in blue represent the probability of the node occurring. It is essential to note that we consider only leaf nodes as potential hands, while other nodes are merely stops on the way to those potential hands.
-Here, the tree's characteristics are invariant due to the nature of the game. For instance, if we know the depth of a node, we can determine the number of cards within it, and vice versa. Additionally, with the creation of each node, the branches diverge in a reverse pyramid manner. By this, I mean that if there are 8 cards in the known deck and we are referring to a node on the 4th level, we know that until we reach that node, the branches will be in the form of 8*7*6*5.
-Therefore, we can generalize the probability of a node occurring as 1/(s!/(s-(n-1))!), where s represents the number of cards in the known deck and n denotes the number of cards in the node. The reason for -1 is that the depth of the cards within the node is always one more than it would be without considering the dealer's open card.
 Now that the tree has been generated, we need to create a map that represents the possible hands the dealer could have and their probabilities.
 This map should have 6 keys and values: 0, 17, 18, 19, 20, 21. The keys represent the hand values, and the value represents the sum of the probabilities of those hand values. Returning to the tree mentioned earlier, the map value for that tree would be as follows:
 
