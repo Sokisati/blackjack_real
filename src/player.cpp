@@ -286,51 +286,6 @@ double Glados::getExpectedValue(GameDeck originalDeck, card_t openCard)
         duplicateMap[imaginaryCard]=(imaginaryWinProb-initialWinProb);
     }
 
-    //if it's *nearly* zero, it can mean either drawing one card won't increase our probability of winning,
-    //or it can decrease or increase
-    //one way to find out:
-
-    if(expectedValue<0 && getPlayerGameValue()<=6)
-    {
-        std::cout<<"double combinations: "<<"\n";
-        probBar = treeFunction(originalDeck,openCard);
-        initialWinProb = probBar.getWinProb(getPlayerGameValue());
-        if(originalDeck.getNumberOfCards()<6)
-        {
-            throw OutOfCards();
-        }
-        unsigned int selection = 2;
-        unsigned int numberOfCombinations;
-
-        std::vector<std::vector<card_t>> combinationVector = originalDeck.getCardCombinations(selection);
-        std::vector<PlayerDeck> possibleHands = imaginaryDeck.createCombinationHands(combinationVector);
-        numberOfCombinations = possibleHands.size();
-
-        for(int i=0; i<numberOfCombinations; i++)
-        {
-            if(i!=0)
-            {
-                caseScenario = expectedValueCaseDetector(expectedValue,initialWinProb,i,numberOfCombinations);
-                if(caseScenario!=0)
-                {
-                    return caseScenario;
-                }
-            }
-            imaginaryDeck.copyDeck(originalDeck);
-            imaginaryHandValue = getImaginaryHandValueCombinationHand(possibleHands[i]);
-            if(imaginaryHandValue==0)
-            {
-                imaginaryWinProb=0;
-            }
-            else
-            {
-                imaginaryWinProb = probBar.getWinProb(imaginaryHandValue);
-            }
-            expectedValue += (imaginaryWinProb-initialWinProb);
-        }
-    }
-
-
     std::cout<<"e: "<<expectedValue<<"\n";
     return expectedValue;
 
