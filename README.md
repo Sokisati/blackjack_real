@@ -10,7 +10,7 @@ To generate a function that calculates whether it is more appropriate to draw a 
 If we formulate the question in a more specific format: Is the probability of winning when we don't draw a card less than or greater than the sum of the probabilities of winning that could occur when we do draw a card?
 The formula we will use is as follows:
 
-![image](https://github.com/Sokisati/blackjack_real/assets/129625653/09b231ba-f63b-46a8-8565-42a30fda4274)
+  ![image](https://github.com/Sokisati/blackjack_real/assets/129625653/09b231ba-f63b-46a8-8565-42a30fda4274)
 
 Calculation of Winning Probability
 The probability of winning is calculated using a tree generated with the known deck and the dealer's open card. In the tree created with the strategy of hitting below 17 and standing equal to or above, each leaf represents a potential hand the dealer could have. The probability of each node occurring is calculated as the probability of the parent node * ( 1/(the number of siblings it has +1) ).
@@ -23,6 +23,7 @@ Here, the tree's characteristics are invariant due to the nature of the game. Fo
 Therefore, we can generalize the probability of a node occurring as 1/(s!/(s-(n-1))!), where s represents the number of cards in the known deck and n denotes the number of cards in the node. The reason for -1 is that the depth of the cards within the node is always one more than it would be without considering the dealer's open card.
 Now that the tree has been generated, we need to create a map that represents the possible hands the dealer could have and their probabilities.
 This map should have 6 keys and values: 0, 17, 18, 19, 20, 21. The keys represent the hand values, and the value represents the sum of the probabilities of those hand values. Returning to the tree mentioned earlier, the map value for that tree would be as follows:
+
 ![image](https://github.com/Sokisati/blackjack_real/assets/129625653/11e66681-ef08-464b-bdcf-83cc5a256e70)
 
 Now, all we need to do is to place our hand value on this map and sum the probability values above it and to its left. (I have explained why the value above represents a winning situation despite being a tie in the other document.)
@@ -30,15 +31,7 @@ Now, all we need to do is to place our hand value on this map and sum the probab
 For example; if our hand value is 15, our probability of winning is 1/6, and if it's 18, it is 5/6.
 
 Ultimate Test
-So, how do we decide if the algorithms and formulas I described above are working correctly? There are two methods:
-1) For possible situations (by situations, I mean the dealer's open card, our 2 cards, and the known deck), we calculate our probability of winning when playing with the dealer's strategy and our probability of winning when playing with the Glados strategy. Note that probability of winning in a given situation with Glados strategy is NOT the same as probability of winning if Glados draws a card or not. 
-First, we need to calculate the expected value. If the expected value is positive, then we should calculate the expected value for each possible card that could come next, and for the cards with a positive expected value, this process should continue until Glados busts or the expected value becomes negative. (None of the calculated values are *real*; they are just imaginary scenarios.) Remember that each possible card that could come next is a different scenario, and for each scenario, we must create a separate tree for each card drawn assumption.
-![tree56](https://github.com/Sokisati/blackjack_real/assets/129625653/15c6baf7-2c52-48a0-9326-2b72db391cc7)
-Positive and negative sign represents the value for expected value in each node. N/A is for nodes that busted, hence there is no point in calculating expected value. This tree goes on, but it’s too large for me to display here. Instead, here is a small part of the depth 1:
 
-![tree567](https://github.com/Sokisati/blackjack_real/assets/129625653/3741f6ae-813d-4022-9940-069b95bae632)
-
-2) In this case, simulating the game is a sensible option. The more games we play in the simulation, the closer we get to the real advantage ratio.
 We play hundreds of games against Glados and introduce a ghost player into this simulation. The cards drawn by this ghost player are not subtracted from the real deck. It mimics the dealer's strategy (hence I named it "copycat") and if possible, it copies Glados's cards.
 For example:
 Glados is dealt the first 2 cards, which are 10 and 5. The dealer's open card is 6. Glados calculates the expected value and decides not to draw as it turns out negative. However, the copycat, after obtaining the cards 10 and 5, wants to draw as it mimics the dealer's strategy.
