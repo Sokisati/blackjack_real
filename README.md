@@ -1,7 +1,6 @@
-In this project, I have designed and implemented a bot that plays the card game "Blackjack".
+In this project, I have designed and implemented a bot that plays the card game "Blackjack" from stratch. Know that all the algorithms, formulas and the code for them are all designed by me. Not a single external library was used for this project.
 
 Know that in this document, I have focused on the operational methods and outcomes of formulas and algorithms rather than their reasons and logics. If you are asking questions like "Why?" or "How so?" you can examine the other document where I have explained in more detail.
-I designed all of what I am about to explain, so it is perfectly natural for errors or incomplete calculations. If you think you found one, please let me know.
 
 Objective
 
