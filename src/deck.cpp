@@ -2,11 +2,10 @@
 // Created by yagiz on 2/22/2024.
 //
 #include "deck.h"
+
+
+
 typedef unsigned int handvalue_t;
-const char*  NotThreadApplicable::what()
-{
-    return "Too few cards for multithreading";
-}
 
 const char* AsyncDecks::what()
 {

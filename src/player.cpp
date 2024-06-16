@@ -59,7 +59,7 @@ void Player::drawRandomCard(GameDeck &actualDeck)
 
 Glados::Glados(bool approximationMethod)
 {
-    this->approximation = approximation;
+    this->approximation = approximationMethod;
 }
 
 void Glados::drawSpecificCard(card_t cardToDraw, GameDeck &actualDeck, GameDeck &knownDeck)

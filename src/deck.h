@@ -69,9 +69,5 @@ struct AsyncDecks : public std::exception
     const char* what();
 };
 
-struct NotThreadApplicable : public std::exception
-{
-    const char* what();
-};
 
 #endif //BLACKJACK_REAL_DECK_H
